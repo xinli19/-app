@@ -1,0 +1,23 @@
+flowchart TD
+  subgraph List["运营查看提醒事项列表（按紧急度与生效性）"]
+    UI_List[/"运营前端 /o/reminders"/]
+    UI_List --> BuildDefault["默认筛选: 生效中 + recipient=我"]
+    BuildDefault --> API_GET["GET /api/v1/reminders?recipient_me=true&include_only_active=true&ordering=-urgency,-created_at&page=1&size=20&source=teacher|research&course_system_id"]
+    API_GET --> Auth{{"鉴权: 运营?"}}
+    Auth -- 否 --> E403["403"]
+    Auth -- 是 --> FilterActive{{"生效窗口过滤"}}
+    FilterActive --> DB_Query[("DB: Reminder ∩ ReminderRecipient 查询\n- 过滤 recipient=当前运营\n- 可按来源/课程体系分类\n- 支持按紧急度排序")]
+    DB_Query --> Resp200["200 { items, page, size, total }"]
+    Resp200 --> Render["前端渲染: \n- 按紧急度优先\n- 按来源/课程体系分组呈现\n- 字段: 创建日期/来源/紧急度/分类/学员昵称/课程体系/曲目刻度/备注"]
+  end
+
+  subgraph Refresh["刷新列表"]
+    ClickRefresh["点击刷新"] --> API_GET2["GET /api/v1/reminders?...(同上)"]
+    API_GET2 --> Auth2{{"鉴权: 运营?"}}
+    Auth2 -- 否 --> E403b["403"]
+    Auth2 -- 是 --> DB_Query2[("DB: 同上查询")]
+    DB_Query2 --> Resp200b["200 items"]
+    Resp200b --> Render
+  end
+
+  Resp200 --> ClickRefresh

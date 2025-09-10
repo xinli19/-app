@@ -1,0 +1,34 @@
+flowchart TD
+  subgraph StudentInfoModal["学员信息与历史弹窗（教师）"]
+    ClickName["在页面中点击学员昵称"] --> OpenModal["打开学员信息弹窗"]
+    OpenModal --> API_GET_STU["GET /api/v1/students/:id"]
+    API_GET_STU --> AuthT{{"鉴权: 教师?"}}
+    AuthT -- 否 --> E403_T["403"]
+    AuthT -- 是 --> DB_Stu[("DB: Student 查询（可见性校验，软删过滤）")]
+    DB_Stu --> RespStu["200 { id, nickname, tags?, ops_note? }"]
+    RespStu --> ShowBasic["展示学员基本信息"]
+
+    ShowBasic --> API_GET_FB["GET /api/v1/feedbacks?student_id=:id&ordering=-created_at&page=1&size=10"]
+    API_GET_FB --> AuthT2{{"鉴权: 教师?"}}
+    AuthT2 -- 否 --> E403_T2["403"]
+    AuthT2 -- 是 --> DB_FB[("DB: FeedbackRecord 查询（可见范围策略，软删过滤）")]
+    DB_FB --> RespFB["200 { items, page, size, total }"]
+    RespFB --> RenderFB["渲染最近10条点评记录"]
+    RenderFB --> More["滚动/分页加载更多"]
+    More --> API_GET_FB
+  end
+
+  subgraph CreateReminderFromStudent["在学员信息弹窗中创建提醒"]
+    ClickCreateRem["点击“创建提醒”按钮"] --> OpenRemModal["打开提醒创建弹窗"]
+    OpenRemModal --> FillRem["填写：接收人（多选）/ 分类 / 提醒内容 / 紧急度"]
+    FillRem --> SubmitRem["提交"]
+    SubmitRem --> API_REM_POST["POST /api/v1/reminders"]
+    API_REM_POST --> AuthRem{{"鉴权: 教师?"}}
+    AuthRem -- 否 --> E403R["403"]
+    AuthRem -- 是 --> EnrichR{{"自动关联当前学员"}}
+    EnrichR --> ValidateR{{"校验：接收人≥1、内容非空"}}
+    ValidateR -- 失败 --> E422R["422"]
+    ValidateR -- 通过 --> DB_Rem["DB: 写入提醒及接收人"]
+    DB_Rem --> Resp201R["201 Created"]
+    Resp201R --> BackModal["关闭弹窗并提示成功"]
+  end

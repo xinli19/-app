@@ -1,0 +1,19 @@
+flowchart TD
+    subgraph R1A[教研-公告管理（/r/announcements/...）]
+        direction TB
+        newView[发布公告页\n/r/announcements/new]
+        chooseType[选择公告类型]
+        chooseTTL[选择公告时效]
+        fillText[填写公告内容文本\n规则: 不可为零]
+        submitNew[提交公告\nPOST /api/v1/announcements]
+        listView[公告列表页]
+        fetchList[拉取公告列表\nGET /api/v1/announcements]
+        editView[编辑公告页\n/r/announcements/:id/edit]
+        submitEdit[提交编辑\nPATCH /api/v1/announcements/:id]
+        deleteAnn[删除公告\nDELETE /api/v1/announcements/:id]
+
+        newView --> chooseType --> chooseTTL --> fillText --> submitNew --> listView
+        listView --> fetchList
+        listView --> editView --> submitEdit --> listView
+        listView --> deleteAnn --> fetchList
+    end

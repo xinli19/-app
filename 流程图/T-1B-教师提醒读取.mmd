@@ -1,0 +1,26 @@
+flowchart TD
+  subgraph ReminderList["教师查看全部提醒事项列表（筛选/排序/搜索）"]
+    UI_List[/"教师前端 /t/reminders/"/]
+    UI_List --> BuildQuery["构造查询: recipient_me=true, active=true, start?, end?, sender_id?, category?, course_id?, q?（支持学员昵称/ID搜索）, ordering=-created_at, page, size"]
+    BuildQuery --> API_GET["GET /api/v1/reminders?recipient_me=true&active=true&...&ordering=-created_at&page&size"]
+    API_GET --> DB_Filter[("后端校验接收人=当前教师；按筛选条件过滤；软删过滤")]
+    DB_Filter --> Resp200["200 { items, page, size, total }"]
+    Resp200 --> Render["前端渲染：列表 + 分页 + 条件区"]
+  end
+
+  subgraph Detail["查看提醒详情"]
+    ClickRow["点击某条提醒"] --> API_GET_ONE["GET /api/v1/reminders/:id"]
+    API_GET_ONE --> AuthView{"校验当前教师为接收人 或 有权限查看?"}
+    AuthView -- 否 --> E403["403"]
+    AuthView -- 是 --> Resp200One["200 { id, title, content_html, category, start_at, end_at, read_at, sender, ... }"]
+  end
+
+  subgraph DeleteMine["删除我发送的提醒事项"]
+    SelectMine["在列表中选中一条 '我发送' 的提醒"] --> API_DELETE["DELETE /api/v1/reminders/:id"]
+    API_DELETE --> AuthDel{"鉴权: 教师? + 校验 sender=当前教师"}
+    AuthDel -- 否 --> E403b["403 无权限删除他人创建"]
+    AuthDel -- 是 --> DB_SoftDel[("DB: 软删 Reminder")]
+    DB_SoftDel --> Resp204["204 No Content"]
+  end
+
+  Resp200 --> ClickRow

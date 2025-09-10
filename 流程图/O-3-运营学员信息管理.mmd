@@ -1,0 +1,70 @@
+flowchart TD
+  subgraph ImportPreview["批量导入（预览）"]
+    UI_Import[/"运营前端 /o/students/import"/]
+    UI_Import --> Upload["上传 xlsx（字段: 用户id, 用户昵称, 完成任务数, 打卡天数, 打卡次数, 被点赞数, 被评论数, 被点评数, 被精选数, 参与时间）"]
+    Upload --> API_PREVIEW["POST /api/v1/students/import/preview"]
+    API_PREVIEW --> Auth{{"鉴权: 运营?"}}
+    Auth -- 否 --> E403a["403"]
+    Auth -- 是 --> ParseMap[("服务端解析与映射: 用户id → 小鹅通ID；\n在学生库中查找映射，不存在则加入新学员待选名单\n重复校验: 以小鹅通ID为唯一锚点")]
+    ParseMap --> Resp200Preview["200 返回预览: { 待导入名单(可修改), 将更新项, 潜在冲突 }"]
+    Resp200Preview --> UI_Confirm["前端展示“本次待导入名单”，运营确认/修改"]
+  end
+
+  subgraph ImportCommit["批量导入（提交）"]
+    UI_Confirm --> API_COMMIT["POST /api/v1/students/import/commit"]
+    API_COMMIT --> Auth2{{"鉴权: 运营?"}}
+    Auth2 -- 否 --> E403b["403"]
+    Auth2 -- 是 --> Upsert[("DB: ImportBatch + ImportRow\n- 以小鹅通ID去重: 存在则更新昵称，不存在则新建学员\n- 写入失败行错误原因")]
+    Upsert --> Resp201Import["201 { batch_id, created_count, updated_count, failed_count }"]
+  end
+
+  subgraph ManualAdd["手动添加学员（最少字段）"]
+    UI_New[/"运营前端 /o/students/new"/]
+    UI_New --> SubmitNew["提交: xetong_id(小鹅通ID), nickname(学员昵称), 其他可选字段"]
+    SubmitNew --> API_POST["POST /api/v1/students"]
+    API_POST --> Auth3{{"鉴权: 运营?"}}
+    Auth3 -- 否 --> E403c["403"]
+    Auth3 -- 是 --> ValidateNew{{"校验: 必填字段/格式"}}
+    ValidateNew -- 失败 --> E422n["422"]
+    ValidateNew -- 通过 --> DB_Create[("DB: Insert Student")]
+    DB_Create --> Resp201["201 Created + 学员数据"]
+  end
+
+  subgraph Edit["编辑学员信息（不支持删除）"]
+    UI_Search[/"运营前端 /o/students?search"/] --> API_FIND["GET /api/v1/students?q=:id_or_nickname&page&size"]
+    API_FIND --> Auth4{{"鉴权: 运营?"}}
+    Auth4 -- 否 --> E403d["403"]
+    Auth4 -- 是 --> Resp200List["200 items"]
+    Resp200List --> ClickOne["点击编辑"]
+    ClickOne --> API_GET_ONE["GET /api/v1/students/:id"]
+    API_GET_ONE --> Auth5{{"鉴权: 运营?"}}
+    Auth5 -- 否 --> E403e["403"]
+    Auth5 -- 是 --> FillForm["回填表单（可编辑字段：\n昵称/备注名/课程体系/标签/运营备注/运营回访备注）"]
+    FillForm --> ConfirmDlg["提交前弹出确认框，展示改动内容"]
+    ConfirmDlg --> API_PUT["PUT /api/v1/students/:id"]
+    API_PUT --> Auth6{{"鉴权: 运营?"}}
+    Auth6 -- 否 --> E403f["403"]
+    Auth6 -- 是 --> DB_Update[("DB: Update Student 变更字段")]
+    DB_Update --> Resp200Upd["200 更新成功"]
+  end
+
+  subgraph Export["导出学员列表（批量选择）"]
+    UI_ListSel[/"运营前端 /o/students"/] --> SelectRows["勾选学员"]
+    SelectRows --> ChooseFields["选择导出字段(白名单)"]
+    ChooseFields --> API_EXPORT_STU["POST /api/v1/ops/students/export"]
+    API_EXPORT_STU --> Auth7{{"鉴权: 运营?"}}
+    Auth7 -- 否 --> E403g["403"]
+    Auth7 -- 是 --> ValidateExp{{"校验: 选中行/或当前筛选 + 字段白名单"}}
+    ValidateExp -- 失败 --> E422e["422"]
+    ValidateExp -- 通过 --> GenXLSX[("后端生成 xlsx（流式）")]
+    GenXLSX --> Resp200File["200 文件下载"]
+  end
+
+  subgraph FailReview["导入失败行查看（不提供导出）"]
+    FromImport["从导入结果跳转"] --> API_GET_BATCH["GET /api/v1/students/import/batches/:id"]
+    API_GET_BATCH --> Auth8{{"鉴权: 运营?"}}
+    Auth8 -- 否 --> E403h["403"]
+    Auth8 -- 是 --> DB_ReadBatch[("DB: 读取 ImportBatch 汇总 + ImportRow 失败行")]
+    DB_ReadBatch --> Resp200Batch["200 { summary, failed_rows{ row_no, error } }"]
+    Resp200Batch --> RenderFail["前端渲染失败行（仅查看，不支持导出）"]
+  end

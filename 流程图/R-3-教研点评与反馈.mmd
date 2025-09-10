@@ -1,0 +1,22 @@
+flowchart TD
+    subgraph R3[教研-学员点评记录列表与教研反馈（/r/feedbacks）]
+        open[打开页面]
+        fetch15[展示最近15天的点评记录\nGET /api/v1/feedbacks]
+        sortTime[可按时间排序]
+        fields[列表字段\n- 学员昵称/学员ID\n- 点评记录创建时间\n- 点评教师\n- 课程体系\n- 曲目刻度\n- 任务备注\n- 教师点评内容\n- 教研反馈内容]
+        filters[筛选条件\n- 教师点评内容关键字\n- 点评记录创建时间\n- 课程体系\n- 曲目刻度\n- 点评教师]
+        search[搜索: 学员昵称 / 学员ID]
+        createReminder[如有需要：选择点评记录 -> 创建提醒\n（见提醒事项管理）]
+        fillResearch[如有需要：选择点评记录 -> 填写教研反馈内容]
+        submitResearch[提交后入库\nPATCH /api/v1/feedbacks/:id]
+        export[批量选定记录 -> 导出为xlsx\nGET /api/v1/feedbacks/export\n规则: 导出字段可选]
+        refresh[刷新列表 -> 重新拉取\nGET /api/v1/feedbacks]
+
+        open --> fetch15 --> sortTime --> fields
+        fields --> filters
+        fields --> search
+        fields --> createReminder
+        fields --> fillResearch --> submitResearch --> refresh
+        fields --> export
+        refresh --> fetch15
+    end

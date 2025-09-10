@@ -1,0 +1,55 @@
+flowchart TD
+  subgraph VisitList["回访记录列表（默认30天）"]
+    UI_List[/"运营前端 /o/visit-records"/]
+    UI_List --> Build30d["默认: created_at ∈ [now-30d, now]"]
+    Build30d --> API_GET["GET /api/v1/visit-records?start_at&end_at&ordering=-created_at|-visit_at|-urgency|-status&status?&urgency?&purpose?&operator_id?&page&size&q=:student"]
+    API_GET --> Auth{{"鉴权: 运营?"}}
+    Auth -- 否 --> E403["403"]
+    Auth -- 是 --> DB_Query[("DB: VisitRecord 查询 + 过滤/排序/分页")]
+    DB_Query --> Resp200["200 { items(pageed), total }（字段见需求清单）"]
+    Resp200 --> Render["前端渲染 列表 + 操作按钮（查看/编辑）"]
+    Render --> BtnView["点击查看"] --> API_GET_ONE["GET /api/v1/visit-records/:id"] --> Resp200One["200 详情"]
+    Render --> BtnEdit["点击编辑"] --> NavEdit[/"跳转编辑页 /o/visit-records/:id/edit"/]
+  end
+
+  subgraph CreateVisit["创建回访记录"]
+    UI_New[/"运营前端 /o/visit-records/new"/]
+    UI_New --> SearchStu["搜索学员昵称或学员ID"]
+    SearchStu --> API_STU_FIND["GET /api/v1/students?q=:keyword&page&size"]
+    API_STU_FIND --> Auth2{{"鉴权: 运营?"}}
+    Auth2 -- 否 --> E403b["403"]
+    Auth2 -- 是 --> Resp200Stu["200 items（含上一次回访时间/已回访次数/上次回访内容）"]
+    Resp200Stu --> FillForm["填写: 目的/紧急度/状态/结果/内容/下次回访时间/是否需跟进/回访人员(默认我)"]
+    FillForm --> Submit["提交"]
+    Submit --> API_POST["POST /api/v1/visit-records"]
+    API_POST --> Auth3{{"鉴权: 运营?"}}
+    Auth3 -- 否 --> E403c["403"]
+    Auth3 -- 是 --> DB_Save[("DB: Insert VisitRecord")]
+    DB_Save --> Resp201["201 Created"]
+  end
+
+  subgraph EditVisit["编辑回访记录"]
+    NavEdit --> API_EDIT_GET["GET /api/v1/visit-records/:id"]
+    API_EDIT_GET --> Auth4{{"鉴权: 运营?"}}
+    Auth4 -- 否 --> E403d["403"]
+    Auth4 -- 是 --> FillEdit["回填并改动"]
+    FillEdit --> Confirm["确认提交"]
+    Confirm --> API_PUT["PUT /api/v1/visit-records/:id"]
+    API_PUT --> Auth5{{"鉴权: 运营?"}}
+    Auth5 -- 否 --> E403e["403"]
+    Auth5 -- 是 --> DB_Update[("DB: Update VisitRecord")]
+    DB_Update --> Resp200Upd["200 更新成功"]
+  end
+
+  subgraph Linkage["联动：按需生成提醒事项"]
+    RuleCheck{{"当需跟进=true 或 接近下次回访时间(24h内)?"}}
+    RuleCheck -- 是 --> Cron["系统定时任务扫描（每小时）"]
+    Cron --> BuildRem["构造提醒: recipients=相关接收人; category=visit.followup; urgency=按规则; start_at=now; end_at=+7d"]
+    BuildRem --> API_REM["POST /api/v1/reminders"]
+    API_REM --> DB_Rem[("DB: 写入 Reminder + Recipient")]
+    DB_Rem --> Audit["记录审计日志"]
+    RuleCheck -- 否 --> Noop["不生成提醒"]
+  end
+
+  Resp201 --> RuleCheck
+  Resp200Upd --> RuleCheck

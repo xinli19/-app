@@ -1,0 +1,56 @@
+flowchart TD
+  subgraph ListAndInlineEdit["未完成点评任务（列表行内编辑）"]
+    UI_List[/"教师前端 /t/evaluation-tasks/"/]
+    UI_List --> API_LIST["GET /api/v1/eval-tasks?me=true&ordering=-created_at&page&size"]
+    API_LIST --> Auth{{"鉴权: 教师?"}}
+    Auth -- 否 --> E401["401/403"]
+    Auth -- 是 --> RenderRows["前端渲染：每条任务一行；字段：学员、课程体系选择、曲目刻度选择（多选、模糊匹配）、点评内容(1-200, 必填)、教师印象(可选, 默认收起)、任务备注提示"]
+    RenderRows --> FocusInput["首次在该行聚焦/编辑"]
+    FocusInput --> API_START["POST /api/v1/eval-tasks/:id/start"]
+    API_START --> Idem["幂等：pending→in_progress；已 in_progress 直接返回"]
+    RenderRows --> SubmitRow["提交该条点评"]
+    SubmitRow --> API_SUBMIT["POST /api/v1/eval-tasks/:id/submit"]
+    API_SUBMIT --> Validate{{"校验：content 纯文本 1-200；状态必须 in_progress"}}
+    Validate -- 否 --> E422["422"]
+    Validate -- 是 --> DB_Save[("DB: 保存 FeedbackRecord；任务置 completed；写入 completed_at")]
+    DB_Save --> Resp201["201 { task_id, feedback_id, status='completed', completed_at }"]
+    Resp201 --> UpdateUI["移除该行或标记为完成"]
+  end
+
+  subgraph Refresh["刷新未完成任务列表（编辑中保护）"]
+    ClickRefresh["点击刷新"] --> CheckDirty{"是否存在未保存编辑？"}
+    CheckDirty -- 是 --> BlockRefresh["弹警示并阻止刷新"]
+    CheckDirty -- 否 --> API_LIST
+  end
+
+  subgraph CreateReminderFromTask["从任务行内创建提醒（不打断编辑）"]
+    TriggerCreate["点击该行“创建提醒”"] --> OpenRemModal["打开提醒创建弹窗"]
+    OpenRemModal --> FillRem["填写：接收人（多选）/ 分类 / 提醒内容 / 紧急度"]
+    FillRem --> SubmitRem["提交"]
+    SubmitRem --> API_REM_POST["POST /api/v1/reminders"]
+    API_REM_POST --> AuthRem{{"鉴权: 教师?"}}
+    AuthRem -- 否 --> E403R["403"]
+    AuthRem -- 是 --> EnrichRem{{"自动关联当前学员；若来源该条点评则关联该点评"}}
+    EnrichRem --> ValidateRem{{"校验：接收人≥1、内容非空"}}
+    ValidateRem -- 否 --> E422R["422"]
+    ValidateRem -- 是 --> DB_Rem[("DB: 写入提醒及接收人")]
+    DB_Rem --> Resp201R["201 Created"]
+    Resp201R --> BackInline["关闭弹窗，返回行内编辑"]
+  end
+
+  subgraph TeacherCreateTask["教师主动创建/删除点评任务（来源=教师）"]
+    EntryCreate["点击“创建点评任务”"] --> SearchStu["搜索学员（昵称/ID 模糊匹配）"]
+    SearchStu --> PickStu["选择学员，填写任务备注（可选）"]
+    PickStu --> API_CREATE_TASK["POST /api/v1/eval-tasks"]
+    API_CREATE_TASK --> AuthC{{"鉴权: 教师?"}}
+    AuthC -- 否 --> E403C["403"]
+    AuthC -- 是 --> DB_InsertTask[("DB: 新建任务，来源=teacher，状态=pending")]
+    DB_InsertTask --> Resp201Task["201 Created"]
+    Resp201Task --> UI_List
+
+    EntryDelete["在“我创建的任务列表”中选择一条"] --> API_DELETE_TASK["DELETE /api/v1/eval-tasks/:id"]
+    API_DELETE_TASK --> CheckOwner2{{"校验: 创建者=当前教师"}}
+    CheckOwner2 -- 否 --> E403D["403 无权限删除他人创建"]
+    CheckOwner2 -- 是 --> DB_SoftDelTask[("DB: 软删该任务")]
+    DB_SoftDelTask --> Resp204Task["204 No Content"]
+  end

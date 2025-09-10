@@ -1,0 +1,30 @@
+flowchart TD
+  subgraph Board["教师公告栏（公告 + 我收到的提醒）"]
+    UI_Entry[/"教师前端 /t/announcements/"/]
+
+    UI_Entry --> PARALLEL{加载公告与提醒}
+    PARALLEL --> API_GET_ANN["GET /api/v1/announcements?ordering=-created_at&page&size"]
+    PARALLEL --> API_GET_REM["GET /api/v1/reminders?recipient_me=true&active=true&ordering=-created_at&page&size"]
+
+    API_GET_ANN --> ANN_Filter["后端按 scope 包含 teacher + 生效窗口过滤 + 软删过滤"]
+    ANN_Filter --> ANN_200["200 { items, page, size, total }"]
+
+    API_GET_REM --> REM_Filter["后端限定接收人=当前教师 + 生效窗口过滤 + 软删过滤"]
+    REM_Filter --> REM_200["200 { items, page, size, total }"]
+
+    ANN_200 --> Render["前端分组呈现：公告列表 + 提醒列表（分类 + 紧急度优先）"]
+    REM_200 --> Render
+
+    Refresh["点击 刷新"] --> PARALLEL
+    Collapse["点击 收起公告栏"] --> Collapsed["已收起（不销毁数据，只隐藏）"]
+  end
+
+  subgraph Detail["教师查看公告详情（富文本）"]
+    T_UI_Click[点击列表某条公告] --> API_GET_ONE["GET /api/v1/announcements/:id"]
+    API_GET_ONE --> Auth2{{鉴权: 教师?}}
+    Auth2 -- 否 --> E403b[403]
+    Auth2 -- 是 --> ScopeCheck{{校验 scope 含 teacher 且未软删}}
+    ScopeCheck -- 否 --> E404[404 不可见/不存在]
+    ScopeCheck -- 是 --> Resp200One["200 公告详情(HTML 已清洗)"]
+    Resp200One --> RenderDetail[前端安全渲染富文本内容]
+  end

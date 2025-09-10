@@ -1,0 +1,18 @@
+flowchart TD
+  subgraph HistoryList["教师点评历史总览（筛选 + 分页）"]
+    UI_List[/"教师前端 /t/feedbacks/"/]
+    UI_List --> API_GET_LIST["GET /api/v1/feedbacks?teacher_me=true&student_id?&course_id?&piece_id?&q?&start?&end?&ordering=-created_at&page&size"]
+    API_GET_LIST --> Auth{{"鉴权: 教师?"}}
+    Auth -- 否 --> E401["401/403"]
+    Auth -- 是 --> DB_Query[("DB: 按当前教师过滤，支持条件筛选与软删过滤，排序与分页")]
+    DB_Query --> Resp200["200 { items, page, size, total }"]
+    Resp200 --> Render["前端渲染：列表 + 筛选 + 分页"]
+  end
+
+  subgraph ViewDetail["查看点评详情（只读）"]
+    ClickRow["点击某条点评"] --> API_GET_ONE["GET /api/v1/feedbacks/:id"]
+    API_GET_ONE --> Auth2{{"鉴权: 教师?"}}
+    Auth2 -- 否 --> E401b["401/403"]
+    Auth2 -- 是 --> Resp200One["200 { id, content_text, student, course, piece, teacher, created_at }"]
+    Resp200One --> ShowDetail["前端展示详情"]
+  end

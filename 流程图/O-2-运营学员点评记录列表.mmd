@@ -1,0 +1,35 @@
+flowchart TD
+  subgraph List["展示最近14天学员点评记录"]
+    UI_List[/"运营前端 /o/feedbacks"/]
+    UI_List --> Build14d["默认筛选: created_at ∈ [now-14d, now]"]
+    Build14d --> API_GET["GET /api/v1/feedbacks?start_at=now-14d&end_at=now&ordering=-created_at&page=1&size=20&teacher_id?&course_system_id?&progress_percent_gte?&progress_percent_lte?&has_feedback?"]
+    API_GET --> Auth{{"鉴权: 运营?"}}
+    Auth -- 否 --> E403["403"]
+    Auth -- 是 --> DB_Query[("DB: FeedbackRecord 查询\n- 时间范围/排序\n- 可过滤: 有无点评记录/课程体系+进度/点评教师")]
+    DB_Query --> Resp200["200 { items, page, size, total }"]
+    Resp200 --> Render["前端渲染: \n字段: 学员昵称/学员ID/创建时间/点评教师/课程体系/曲目刻度/教师点评内容/任务备注"]
+  end
+
+  subgraph Search["搜索与筛选"]
+    EnterSearch["输入学员昵称或学员ID"] --> API_SEARCH["GET /api/v1/feedbacks?q=:keyword&page&size"]
+    API_SEARCH --> Auth2{{"鉴权: 运营?"}}
+    Auth2 -- 否 --> E403b["403"]
+    Auth2 -- 是 --> DB_Search[("DB: 关键词搜索 + 其他筛选条件")]
+    DB_Search --> Resp200s["200 items"]
+    Resp200s --> Render
+  end
+
+  subgraph Export["批量选定记录，导出为 xlsx（字段可选）"]
+    SelectRows["勾选记录"] --> ClickExport["点击导出"]
+    ClickExport --> ChooseFields["选择导出字段(白名单)"]
+    ChooseFields --> API_EXPORT["POST /api/v1/ops/feedbacks/export"]
+    API_EXPORT --> Auth3{{"鉴权: 运营?"}}
+    Auth3 -- 否 --> E403c["403"]
+    Auth3 -- 是 --> Validate{{"校验: 选中行/或当前筛选 + 字段白名单"}}
+    Validate -- 失败 --> E422["422"]
+    Validate -- 通过 --> GenXLSX[("后端生成 xlsx（流式）")]
+    GenXLSX --> Resp200File["200 文件下载 (Content-Disposition: attachment)"]
+  end
+
+  Resp200 --> EnterSearch
+  Resp200 --> SelectRows

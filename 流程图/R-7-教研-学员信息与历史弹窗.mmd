@@ -1,0 +1,10 @@
+flowchart TD
+    subgraph R7[教研-弹窗查看学员信息与历史点评记录]
+        trigger[点击学员昵称]
+        openModal[弹窗打开]
+        fetchStudent[查看学员信息\nGET /api/v1/students/:id\n显示字段:\n- 学员昵称\n- 标签\n- 运营备注\n- 教师印象]
+        fetchHistory[查看学员历史点评记录（过去10次）\nGET /api/v1/feedbacks（按学员，取最近10条）\n显示字段:\n- 点评记录创建时间\n- 点评教师\n- 课程体系\n- 曲目刻度\n- 任务备注\n- 教师点评内容\n- 教研反馈内容]
+        createReminder[如有需要：创建有关该学员的提醒（见提醒事项管理）]
+
+        trigger --> openModal --> fetchStudent --> fetchHistory --> createReminder
+    end

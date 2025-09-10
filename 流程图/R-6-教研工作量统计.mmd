@@ -1,0 +1,8 @@
+flowchart TD
+    subgraph R6[教研-计算工作量（/r/workloads）]
+        chooseTeacher[教研选择教师]
+        chooseTime[教研选择时间段]
+        pullRecords[系统拉取该时间段内“点评教师=所选教师”的点评记录\nGET /api/v1/workloads 或 GET /api/v1/feedbacks（按条件）]
+        showWorkload[显示教师工作量以及相关点评记录]
+        chooseTeacher --> chooseTime --> pullRecords --> showWorkload
+    end

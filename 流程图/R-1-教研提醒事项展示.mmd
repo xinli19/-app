@@ -1,0 +1,11 @@
+flowchart TD
+    subgraph R1[教研-提醒事项展示（/r/...）]
+        open[打开页面]
+        fetch[拉取提醒事项列表\nGET /api/v1/reminders\n规则:\n- 仅展示“符合实效性”的提醒\n- 来源=教师/运营，且推送给教研]
+        present[呈现方式\n- 按紧急度呈现\n- 根据提醒事项来源、课程体系分类呈现]
+        fields[列表字段\n- 提醒事项创建日期\n- 提醒事项来源\n- 紧急度\n- 提醒事项分类\n- 学员昵称\n- 课程体系\n- 曲目刻度\n- 提醒事项备注]
+        refresh[刷新列表 -> 重新拉取\nGET /api/v1/reminders]
+
+        open --> fetch --> present --> fields
+        refresh --> fetch
+    end

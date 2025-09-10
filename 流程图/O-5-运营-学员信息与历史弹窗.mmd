@@ -1,0 +1,28 @@
+flowchart TD
+  subgraph Open["点击学员昵称，打开弹窗"]
+    Any_List[/"任意运营页面（如提醒/点评列表）"/]
+    Any_List --> ClickStu["点击学员昵称"]
+    ClickStu --> ShowModal["打开学员信息弹窗（空态）"]
+  end
+
+  subgraph Profile["加载学员信息"]
+    ShowModal --> API_STU["GET /api/v1/students/:id"]
+    API_STU --> Auth{{"鉴权: 运营?"}}
+    Auth -- 否 --> E403a["403"]
+    Auth -- 是 --> DB_STU[("DB: Student 查询（昵称/标签/教师印象/运营备注）")]
+    DB_STU --> Resp200Stu["200 { nickname, tags, teacher_impression, ops_note }"]
+    Resp200Stu --> FillProfile["展示学员信息（头部）"]
+  end
+
+  subgraph History["加载学员历史点评记录（最近10条）"]
+    FillProfile --> API_FB["GET /api/v1/feedbacks?student_id=:id&size=10&ordering=-created_at"]
+    API_FB --> Auth2{{"鉴权: 运营?"}}
+    Auth2 -- 否 --> E403b["403"]
+    Auth2 -- 是 --> DB_FB[("DB: FeedbackRecord 查询（按学员）")]
+    DB_FB --> Resp200FB["200 { items }（字段: 创建时间/点评教师/课程体系/曲目刻度/任务备注/教师点评/教研反馈）"]
+    Resp200FB --> RenderList["弹窗列表渲染"]
+  end
+
+  subgraph Action["弹窗内可创建提醒（跳转 4.1）"]
+    RenderList --> GoCreateRem["点击创建提醒 → 跳转 /o/reminders/new（带 student_id）"]
+  end

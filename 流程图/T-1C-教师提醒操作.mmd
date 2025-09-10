@@ -1,0 +1,18 @@
+flowchart TD
+  subgraph MarkRead["标记单条提醒为已读（幂等）"]
+    ClickOne["在提醒列表点击 '标记已读'"] --> API_READ["POST /api/v1/reminders/:id/read"]
+    API_READ --> Auth{"鉴权: 教师? + 校验 当前教师为接收人"}
+    Auth -- 否 --> E403["403"]
+    Auth -- 是 --> DB_Update[("DB: 设置 read_at=now（若已读则保持不变）")]
+    DB_Update --> Resp200["200 { id, read_at }"]
+    Resp200 --> UI_Update["前端更新该条提醒状态（已读）"]
+  end
+
+  subgraph BulkRead["批量标记为已读（幂等）"]
+    SelectMulti["多选若干提醒"] --> API_BULK["POST /api/v1/reminders/read-bulk\nBody: { ids: string[] }"]
+    API_BULK --> Auth2{"鉴权: 教师? + 校验 接收人均为当前教师"}
+    Auth2 -- 否 --> E403b["403"]
+    Auth2 -- 是 --> DB_Bulk[("DB: 对未读项设置 read_at=now")]
+    DB_Bulk --> Resp200Bulk["200 { updated: number }"]
+    Resp200Bulk --> UI_UpdateBulk["批量更新前端状态"]
+  end
