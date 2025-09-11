@@ -157,19 +157,59 @@
   - title 可选
   - message 必填
   - link_type 与 link_id 必须同时为空或同时有值（约束 ck_notif_link_pair_coherence）
-- 请求体示例：
-  {
-    "recipient": "aaaa1111-bbbb-2222-cccc-333333333333",
-    "sender": "11111111-2222-3333-4444-555555555555",
-    "type": "system_info",
-    "title": "回访提醒",
-    "message": "您有新的回访记录待查看",
-    "link_type": "followup_record",
-    "link_id": 12345
-  }
 
 4) 更新 Update
 - PUT/PATCH /api/notifications/notifications/{id}/
+
+5) 删除 Delete
+- DELETE /api/notifications/notifications/{id}/
+- 说明：软删
+
+6) 工作流：标记已读
+- POST /api/notifications/notifications/{id}/mark_read/
+- 说明：将 is_read=true，read_at=当前时间，返回最新对象
+
+四、提醒 Reminders
+- 代码文件
+  - <mcfile name="urls.py" path="apps/reminders/urls.py"></mcfile>
+  - <mcfile name="views.py" path="apps/reminders/views.py"></mcfile>
+  - <mcfile name="serializers.py" path="apps/reminders/serializers.py"></mcfile>
+- 前缀：/api/v1/reminders
+
+1) 列表 List
+- GET /api/v1/reminders/
+- 支持
+  - 过滤：category, urgency, sender, receiver, student, e2e_type
+  - 搜索：content, student__nickname, student__xiaoetong_id, sender__name
+  - 排序：created_at, start_at, end_at, urgency
+  - 分页：?page=1&size=20（最大 size=100，若未显式声明则以全局/类分页配置为准）
+- 说明：当前实现包含权限校验（详情/删除时仅允许特定用户），后续可按业务补充“仅展示生效中”等高级过滤
+
+2) 详情 Retrieve
+- GET /api/v1/reminders/{id}/
+- 权限：仅 sender 或在 recipients 列表中的当前用户可查看
+
+3) 新建 Create
+- POST /api/v1/reminders/
+
+4) 更新 Update
+- PUT/PATCH /api/v1/reminders/{id}/
+
+5) 删除 Delete
+- DELETE /api/v1/reminders/{id}/
+- 权限：仅 sender 可删除
+
+6) 动作 Actions
+- 标记单条为已读（别名1）
+  - POST /api/v1/reminders/{id}/mark_read
+  - 返回：{ "detail": "ok" }
+- 标记单条为已读（别名2）
+  - POST /api/v1/reminders/{id}/read
+  - 返回：{ "id": "<reminder_id>", "read_at": "<ISO8601>" }
+- 批量已读
+  - POST /api/v1/reminders/read-bulk
+  - Body: { "ids": ["<reminder_id>", ...] }
+  - 返回：{ "updated": <number> }
 
 5) 删除 Delete
 - DELETE /api/notifications/notifications/{id}/
@@ -199,3 +239,155 @@
   - FollowUpRecord.status/purpose/urgency: FollowUpStatus/FollowUpPurpose/FollowUpUrgency
   - Notification.type/link_type: NotificationType/LinkType
 - 审计字段 created_by/updated_by 当前通过序列化器暴露；如果你希望由后端根据登录用户自动注入，我可以补一个权限/认证中间层或在 ViewSet 的 perform_create/perform_update 中自动设置。
+
+五、点评 Evaluations
+- 代码文件
+  - <mcfile name="urls_v1.py" path="apps/evaluations/urls_v1.py"></mcfile>
+  - <mcfile name="views.py" path="apps/evaluations/views.py"></mcfile>
+  - <mcfile name="serializers.py" path="apps/evaluations/serializers.py"></mcfile>
+- 前缀（v1）：/api/v1/...
+
+A) 点评记录 Feedbacks
+1) 列表 List
+- GET /api/v1/feedbacks/
+- 支持
+  - 时间范围：start, end（或兼容 start_at, end_at）
+    - 接受日期（YYYY-MM-DD）或日期时间（ISO8601）
+    - 若均不传，默认查询最近 15 天（[now-15d, now]）
+  - 关键词 q：匹配 student.nickname、teacher.name、teacher_content
+  - 教师筛选：teacher_me=1/true（当前登录教师）、或 teacher_id
+  - 学员筛选：student_id（UUID，非法 UUID 返回 400）
+  - 课程/曲目筛选：course_id、piece_id（通过关联明细联动，内部去重）
+  - 排序：created_at, updated_at；默认 -created_at
+  - 分页：?page=1&size=20（最大 size=100）
+- 错误示例（非法 UUID）
+  - 响应 400：
+    {
+      "student_id": "Invalid UUID format"
+    }
+
+2) 详情 Retrieve
+- GET /api/v1/feedbacks/{id}/
+
+3) 新建 Create
+- POST /api/v1/feedbacks/
+
+4) 更新 Update
+- PUT/PATCH /api/v1/feedbacks/{id}/
+
+5) 删除 Delete
+- DELETE /api/v1/feedbacks/{id}/
+
+6) 动作 Actions
+- 从点评创建提醒（占位）
+  - POST /api/v1/feedbacks/{id}/create_reminder
+  - 当前返回 501（占位）
+
+7) 导出 Export
+- 教研侧导出（占位）
+  - GET /api/v1/feedbacks/export
+- 运营侧导出（占位）
+  - POST /api/v1/ops/feedbacks/export
+
+B) 点评任务 Tasks
+1) 列表 List
+- GET /api/v1/tasks/
+- 支持
+  - 过滤：student, assignee, status, source, batch_id
+  - 自定义：assignee_me=1/true（按当前登录人员）、assignee_id
+  - 搜索：student__nickname, assignee__name（?search=关键字）
+  - 排序：created_at, updated_at；默认 -created_at
+
+2) 详情/CRUD
+- 标准 REST：/api/v1/tasks/{id}/ GET/POST/PATCH/DELETE
+
+3) 动作（占位）
+- POST /api/v1/tasks/{id}/start
+- POST /api/v1/tasks/{id}/submit
+- 均返回 501（占位说明）
+
+备注
+- /api/v1/eval-tasks/ 为 /api/v1/tasks/ 的别名路由，行为一致
+
+六、学员 Students
+- 代码文件
+  - <mcfile name="urls_v1.py" path="apps/students/urls_v1.py"></mcfile>
+  - <mcfile name="views.py" path="apps/students/views.py"></mcfile>
+  - <mcfile name="serializers.py" path="apps/students/serializers.py"></mcfile>
+- 前缀（v1）：/api/v1/...
+
+A) 学员
+1) 列表 List
+- GET /api/v1/students/
+- 支持
+  - 过滤：status, tags
+  - 搜索：nickname, xiaoetong_id, remark_name（?search=关键字）
+  - 排序：created_at, nickname；默认 -created_at
+
+2) 详情/CRUD
+- 标准 REST：/api/v1/students/{id}/
+
+3) 自定义动作
+- 最近历史点评（默认 10 条，?limit=1..50）
+  - GET /api/v1/students/{id}/recent_feedbacks
+- 从学员弹窗创建提醒（占位）
+  - POST /api/v1/students/{id}/create-reminder（返回 501）
+
+B) 学员标签
+- /api/v1/student-tags/ 标准 REST
+
+C) 学员课程记录 Course Records
+- 资源：/api/v1/course-records/
+- 支持
+  - 过滤：student, course, course_version, course_status, record_status
+  - 搜索：student__nickname, student__xiaoetong_id, course__name
+  - 排序：start_at, created_at；默认 -start_at, -created_at
+
+D) 学员导入/导出（占位）
+- 预览：POST /api/v1/students/import/preview
+- 提交：POST /api/v1/students/import/commit
+- 批次详情：GET /api/v1/students/import/batches/{batch_id}
+- 导出（运营）：POST /api/v1/ops/students/export
+
+七、课程 Courses
+- 代码文件
+  - <mcfile name="urls.py" path="apps/courses/urls.py"></mcfile>
+  - <mcfile name="views.py" path="apps/courses/views.py"></mcfile>
+  - <mcfile name="serializers.py" path="apps/courses/serializers.py"></mcfile>
+- 注意：课程模块当前前缀为 /api/courses/（非 v1）
+
+A) 课程 Course
+- 资源：/api/courses/
+- 支持
+  - 过滤：status
+  - 搜索：name, description
+  - 排序：name, created_at；默认 name
+- 子资源
+  - 课程下课列表：GET /api/courses/{id}/lessons
+  - 课程下曲目列表：GET /api/courses/{id}/pieces
+
+B) 课 Lesson
+- 资源：/api/courses/lessons
+- 支持：按模型与序列化器定义（后续可补充过滤/搜索/排序字段说明）
+
+C) 曲目 Piece
+- 资源：/api/courses/pieces
+- 支持：按模型与序列化器定义（后续可补充过滤/搜索/排序字段说明）
+
+通用错误响应示例
+- 校验失败（400）
+  {
+    "field": ["错误信息"]
+  }
+- 未找到（404）
+  {
+    "detail": "未找到。"
+  }
+- 方法不允许（405）
+  {
+    "detail": "方法 “PUT” 不被允许。"
+  }
+- 非法 UUID（Feedback 列表 student_id）
+  {
+    "student_id": "Invalid UUID format"
+  }

@@ -4,6 +4,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Q
 
 from .models import Announcement
 from .serializers import AnnouncementSerializer
@@ -16,13 +17,26 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
     search_fields = ['content']
     ordering_fields = ['created_at', 'start_at', 'end_at']
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        params = self.request.query_params
+        active = params.get('active') or params.get('include_only_active')
+        if active in ('1', 'true', 'True'):
+            now = timezone.now()
+            qs = qs.filter(
+                start_at__lte=now
+            ).filter(
+                Q(end_at__isnull=True) | Q(end_at__gte=now)
+            )
+        return qs
+
     @action(detail=False, methods=['get'])
     def active(self, request):
         now = timezone.now()
         qs = Announcement.objects.filter(
             start_at__lte=now
         ).filter(
-            models.Q(end_at__isnull=True) | models.Q(end_at__gte=now)
+            Q(end_at__isnull=True) | Q(end_at__gte=now)
         ).order_by('-start_at')
         page = self.paginate_queryset(qs)
         if page is not None:

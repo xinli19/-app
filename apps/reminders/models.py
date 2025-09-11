@@ -153,29 +153,6 @@ class Reminder(AuditModel):
             return 'O'
         return 'O'
 
-    def compute_e2e_type(self):
-        """
-        根据发送人与接收人角色计算端到端类别并返回（不保存）。
-        多接收人场景：优先取 primary receiver，如为空则取第一个子表接收人。
-        """
-        sender_letter = self._pick_role_letter(self.sender)
-        # 选择接收人来源
-        recv_person = self.receiver
-        if recv_person is None:
-            recv_person = self.recipients.first().person if hasattr(self, 'recipients') else None
-        recv_letter = self._pick_role_letter(recv_person) if recv_person else 'O'
-        pair = f"{sender_letter}2{recv_letter}"
-        mapping = {
-            'T2R': EndToEndType.T2R,
-            'T2O': EndToEndType.T2O,
-            'R2T': EndToEndType.R2T,
-            'R2O': EndToEndType.R2O,
-            'O2T': EndToEndType.O2T,
-            'O2R': EndToEndType.O2R,
-            'O2O': EndToEndType.O2O,
-        }
-        return mapping.get(pair, EndToEndType.O2R)
-
     def save(self, *args, **kwargs):
         """
         重写保存：
@@ -272,3 +249,27 @@ class ReminderRecipient(AuditModel):
         self.read_at = at or timezone.now()
         if save:
             self.save(update_fields=['is_read', 'read_at', 'updated_at', 'updated_by'])
+
+
+    def compute_e2e_type(self):
+        """
+        根据发送人与接收人角色计算端到端类别并返回（不保存）。
+        多接收人场景：优先取 primary receiver，如为空则取第一个子表接收人。
+        """
+        sender_letter = self._pick_role_letter(self.sender)
+        # 选择接收人来源
+        recv_person = self.receiver
+        if recv_person is None:
+            recv_person = self.recipients.first().person if hasattr(self, 'recipients') else None
+        recv_letter = self._pick_role_letter(recv_person) if recv_person else 'O'
+        pair = f"{sender_letter}2{recv_letter}"
+        mapping = {
+            'T2R': EndToEndType.T2R,
+            'T2O': EndToEndType.T2O,
+            'R2T': EndToEndType.R2T,
+            'R2O': EndToEndType.R2O,
+            'O2T': EndToEndType.O2T,
+            'O2R': EndToEndType.O2R,
+            'O2O': EndToEndType.O2O,
+        }
+        return mapping.get(pair, EndToEndType.O2R)

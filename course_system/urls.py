@@ -29,6 +29,11 @@ urlpatterns = [
     path('api/followups/', include('apps.followups.urls_v1')),
     path('api/notifications/', include('apps.notifications.urls')),
     path('api/v1/', include('apps.reminders.urls')),
+    path('api/v1/', include('apps.evaluations.urls_v1')),
+    path('api/v1/', include('apps.students.urls_v1')),
+    path('api/v1/', include('apps.followups.urls_v1')),
+    path('api/v1/', include('apps.students.urls_v1')),
+    path('api/v1/', include('apps.announcements.urls_v1')),
 ]
 
 if settings.DEBUG:
