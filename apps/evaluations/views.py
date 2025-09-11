@@ -10,6 +10,9 @@ import datetime
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from django.db.models import Q
+from django.utils.dateparse import parse_datetime, parse_date
 
 from .models import EvaluationTask, FeedbackRecord, FeedbackPieceDetail
 from .serializers import EvaluationTaskSerializer, FeedbackRecordSerializer, FeedbackPieceDetailSerializer
@@ -104,12 +107,19 @@ class FeedbackRecordViewSet(ModelViewSet):
             if dt is None:
                 d = parse_date(val)
                 if d is not None:
-                    dt = datetime.datetime.combine(
+                    # 将“仅日期”按中国本地日解释
+                    from zoneinfo import ZoneInfo
+                    local_tz = ZoneInfo('Asia/Shanghai')
+                    naive = datetime.datetime.combine(
                         d,
                         datetime.time(23, 59, 59, 999999) if is_end else datetime.time.min
                     )
-            if dt is not None and timezone.is_naive(dt):
-                dt = timezone.make_aware(dt)
+                    dt = timezone.make_aware(naive, local_tz)
+            elif timezone.is_naive(dt):
+                # 无时区时间也按中国本地时区解释
+                from zoneinfo import ZoneInfo
+                local_tz = ZoneInfo('Asia/Shanghai')
+                dt = timezone.make_aware(dt, local_tz)
             return dt
 
         start_raw = params.get('start') or params.get('start_at')
@@ -150,7 +160,7 @@ class FeedbackRecordViewSet(ModelViewSet):
             except (ValueError, TypeError):
                 raise DRFValidationError({"student_id": "Invalid UUID format"})
             # 通过校验后再过滤
-            queryset = queryset.filter(student_id=student_id)
+            qs = qs.filter(student_id=student_id)
 
         # 课程/曲目筛选：通过曲目明细关联
         need_distinct = False
@@ -231,12 +241,17 @@ class WorkloadsView(APIView):
             if dt is None:
                 d = parse_date(val)
                 if d is not None:
-                    dt = datetime.datetime.combine(
+                    from zoneinfo import ZoneInfo
+                    local_tz = ZoneInfo('Asia/Shanghai')
+                    naive = datetime.datetime.combine(
                         d,
                         datetime.time(23, 59, 59, 999999) if is_end else datetime.time.min
                     )
-            if dt is not None and timezone.is_naive(dt):
-                dt = timezone.make_aware(dt)
+                    dt = timezone.make_aware(naive, local_tz)
+            elif timezone.is_naive(dt):
+                from zoneinfo import ZoneInfo
+                local_tz = ZoneInfo('Asia/Shanghai')
+                dt = timezone.make_aware(dt, local_tz)
             return dt
 
         start_at = to_dt(request.query_params.get('start_at'), is_end=False)

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教研管理系统</title>
+    <link rel="stylesheet" href="css/researcher.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航栏 -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">教研管理系统</h1>
+                <div class="user-info">
+                    <span class="username" id="username">教研用户</span>
+                    <button class="logout-btn" id="logoutBtn">退出登录</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 侧边导航栏 -->
+        <aside class="sidebar">
+            <nav class="nav-menu">
+                <ul>
+                    <li class="nav-item active">
+                        <a href="#announcements" class="nav-link" data-section="announcements">
+                            <span class="nav-icon">📢</span>
+                            <span class="nav-text">公告管理</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#reminders" class="nav-link" data-section="reminders">
+                            <span class="nav-icon">⏰</span>
+                            <span class="nav-text">教研提醒</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#evaluations" class="nav-link" data-section="evaluations">
+                            <span class="nav-icon">📝</span>
+                            <span class="nav-text">点评管理</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#statistics" class="nav-link" data-section="statistics">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">工作量统计</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 公告管理模块 -->
+            <section id="announcements-section" class="content-section active">
+                <div class="section-header">
+                    <h2>公告管理</h2>
+                    <button class="btn btn-primary" id="newAnnouncementBtn">
+                        <span class="btn-icon">➕</span>
+                        发布新公告
+                    </button>
+                </div>
+
+                <!-- 公告列表 -->
+                <div class="announcements-list" id="announcementsList">
+                    <div class="loading" id="loadingSpinner">加载中...</div>
+                </div>
+            </section>
+
+            <!-- 教研提醒模块 -->
+            <section id="reminders-section" class="content-section">
+                <div class="section-header">
+                    <h2>教研提醒</h2>
+                    <button class="btn btn-primary" id="newReminderBtn">
+                        <span class="btn-icon">➕</span>
+                        创建提醒
+                    </button>
+                </div>
+
+                <!-- 提醒列表 -->
+                <div class="reminders-list" id="remindersList">
+                    <div class="empty-state">
+                        <h3>📋 教研提醒功能</h3>
+                        <p>教研提醒事项展示功能开发中...</p>
+                        <p>将包含：提醒事项列表、创建提醒、处理提醒等功能</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 点评管理模块 -->
+            <section id="evaluations-section" class="content-section">
+                <div class="section-header">
+                    <h2>学员点评记录列表与教研反馈</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" id="refreshEvaluationsBtn">
+                            <span class="btn-icon">🔄</span>
+                            刷新列表
+                        </button>
+                        <button class="btn btn-primary" id="exportEvaluationsBtn">
+                            <span class="btn-icon">📊</span>
+                            导出XLSX
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 筛选和搜索区域 -->
+                <div class="filters-section">
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label for="dateRange">时间范围</label>
+                            <div class="date-range">
+                                <input type="date" id="startDate" placeholder="开始日期">
+                                <span>至</span>
+                                <input type="date" id="endDate" placeholder="结束日期">
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="teacherFilter">点评教师</label>
+                            <select id="teacherFilter">
+                                <option value="">全部教师</option>
+                                <!-- 教师选项将通过JS动态加载 -->
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="courseFilter">课程体系</label>
+                            <select id="courseFilter">
+                                <option value="">全部课程</option>
+                                <!-- 课程选项将通过JS动态加载 -->
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="pieceFilter">曲目刻度</label>
+                            <select id="pieceFilter">
+                                <option value="">全部曲目</option>
+                                <!-- 曲目选项将通过JS动态加载 -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filters-row">
+                        <div class="filter-group search-group">
+                            <label for="searchInput">搜索</label>
+                            <input type="text" id="searchInput" placeholder="学员昵称/学员ID/教师点评内容关键字">
+                        </div>
+                        
+                        <div class="filter-actions">
+                            <button class="btn btn-secondary" id="clearFiltersBtn">清空筛选</button>
+                            <button class="btn btn-primary" id="applyFiltersBtn">应用筛选</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 点评记录列表 -->
+                <div class="evaluations-container">
+                    <div class="evaluations-header">
+                        <div class="batch-actions">
+                            <input type="checkbox" id="selectAllEvaluations">
+                            <label for="selectAllEvaluations">全选</label>
+                            <button class="btn btn-sm btn-secondary" id="batchCreateReminderBtn" disabled>
+                                批量创建提醒
+                            </button>
+                        </div>
+                        
+                        <div class="sort-controls">
+                            <label>排序：</label>
+                            <select id="sortBy">
+                                <option value="-created_at">创建时间（新到旧）</option>
+                                <option value="created_at">创建时间（旧到新）</option>
+                                <option value="student__nickname">学员昵称</option>
+                                <option value="teacher__name">教师姓名</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="evaluations-list" id="evaluationsList">
+                        <div class="loading" id="evaluationsLoading">加载中...</div>
+                    </div>
+                    
+                    <!-- 分页控件 -->
+                    <div class="pagination" id="evaluationsPagination">
+                        <!-- 分页按钮将通过JS动态生成 -->
+                    </div>
+                </div>
+            </section>
+
+            <section id="statistics-section" class="content-section">
+                <h2>工作量统计</h2>
+                <p>工作量统计功能开发中...</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- 发布/编辑公告模态框 -->
+    <div class="modal" id="announcementModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">发布新公告</h3>
+                <button class="modal-close" id="modalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="announcementForm">
+                    <div class="form-group">
+                        <label for="announcementType">公告类型 *</label>
+                        <select id="announcementType" name="type" required>
+                            <option value="">请选择公告类型</option>
+                            <option value="injury_notice">学员伤病</option>
+                            <option value="teaching_reminder">教学提醒</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="announcementContent">公告内容 *</label>
+                        <textarea id="announcementContent" name="content" rows="6" placeholder="请输入公告内容..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="startAt">开始时间</label>
+                        <input type="datetime-local" id="startAt" name="start_at">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="endAt">结束时间</label>
+                        <input type="datetime-local" id="endAt" name="end_at">
+                        <small class="form-help">留空表示长期有效</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="modalCancelBtn">取消</button>
+                <button type="submit" class="btn btn-primary" id="modalSubmitBtn" form="announcementForm">发布公告</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>确认删除</h3>
+                <button class="modal-close" id="deleteModalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除这条公告吗？此操作不可撤销。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="deleteModalCancelBtn">取消</button>
+                <button type="button" class="btn btn-danger" id="deleteModalConfirmBtn">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 教研反馈模态框 -->
+    <div class="modal" id="feedbackModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>填写教研反馈</h3>
+                <button class="modal-close" id="feedbackModalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="feedback-info">
+                    <div class="info-row">
+                        <span class="label">学员：</span>
+                        <span id="feedbackStudentName"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">点评教师：</span>
+                        <span id="feedbackTeacherName"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">点评时间：</span>
+                        <span id="feedbackCreatedAt"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">教师点评内容：</span>
+                        <div class="teacher-content" id="feedbackTeacherContent"></div>
+                    </div>
+                </div>
+                
+                <form id="feedbackForm">
+                    <input type="hidden" id="feedbackRecordId">
+                    <div class="form-group">
+                        <label for="researcherFeedback">教研反馈内容 *</label>
+                        <textarea id="researcherFeedback" name="researcher_feedback" rows="6" placeholder="请输入教研反馈内容..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="feedbackModalCancelBtn">取消</button>
+                <button type="submit" class="btn btn-primary" id="feedbackModalSubmitBtn" form="feedbackForm">提交反馈</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建提醒模态框 -->
+    <div class="modal" id="createReminderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>从点评记录创建提醒</h3>
+                <button class="modal-close" id="reminderModalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="reminderForm">
+                    <input type="hidden" id="reminderFeedbackIds">
+                    <div class="form-group">
+                        <label for="reminderCategory">提醒类别 *</label>
+                        <select id="reminderCategory" name="category" required>
+                            <option value="">请选择提醒类别</option>
+                            <option value="effect.bad">效果不佳</option>
+                            <option value="progress.slow">进度缓慢</option>
+                            <option value="attitude.poor">态度问题</option>
+                            <option value="technique.issue">技术问题</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reminderUrgency">紧急程度 *</label>
+                        <select id="reminderUrgency" name="urgency" required>
+                            <option value="">请选择紧急程度</option>
+                            <option value="urgent">紧急</option>
+                            <option value="normal">普通</option>
+                            <option value="low">较低</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reminderContent">提醒内容 *</label>
+                        <textarea id="reminderContent" name="content" rows="4" placeholder="请输入提醒内容..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reminderRecipients">提醒对象</label>
+                        <div class="recipients-list" id="reminderRecipients">
+                            <!-- 提醒对象选择将通过JS动态生成 -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="reminderModalCancelBtn">取消</button>
+                <button type="submit" class="btn btn-primary" id="reminderModalSubmitBtn" form="reminderForm">创建提醒</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/researcher.js"></script>
+</body>
+</html>

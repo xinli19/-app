@@ -49,9 +49,14 @@ INSTALLED_APPS = [
     'apps.announcements',
     'apps.followups',
     'apps.notifications',
+    'rest_framework',
+    'rest_framework.authtoken',  # 添加这行
+    'corsheaders',  # 添加这行
+    'django_filters',  # 新增：启用 django-filter 的模板与功能
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # 必须在最前面
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -164,4 +169,46 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',  # 新增：全局启用过滤后端
+    ],
 }
+
+# CORS配置 - 允许所有来源（仅开发环境）
+CORS_ALLOW_ALL_ORIGINS = True
+
+# 或者指定特定来源（生产环境推荐）
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8080",
+#     "http://127.0.0.1:8080",
+#     "http://[::]:8080",
+# ]
+
+# 允许的请求头
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# 允许的HTTP方法
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# 允许携带凭据
+CORS_ALLOW_CREDENTIALS = True

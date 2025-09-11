@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睿涵钢琴教育后台系统 - 登录</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>睿涵钢琴教育后台系统</h1>
+                <p>请选择您的身份并登录</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="role-selector">
+                    <label class="role-option">
+                        <input type="radio" name="role" value="teacher" checked>
+                        <span class="role-label">教师</span>
+                    </label>
+                    <label class="role-option">
+                        <input type="radio" name="role" value="researcher">
+                        <span class="role-label">教研</span>
+                    </label>
+                    <label class="role-option">
+                        <input type="radio" name="role" value="operator">
+                        <span class="role-label">运营</span>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" required>
+                    <span class="error-message" id="usernameError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" required>
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span class="checkmark"></span>
+                        记住我
+                    </label>
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span class="btn-text">登录</span>
+                    <span class="btn-loading" style="display: none;">登录中...</span>
+                </button>
+                
+                <div class="error-message" id="generalError"></div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>
