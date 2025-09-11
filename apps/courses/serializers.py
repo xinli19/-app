@@ -3,7 +3,7 @@
 用于API数据序列化和反序列化
 """
 from rest_framework import serializers
-from .models import Course, Lesson, Piece, CourseVersion, LessonVersion, PieceVersion
+from .models import Course, Lesson, Piece, CourseVersion, LessonVersion
 
 
 class CourseSerializer(serializers.ModelSerializer):

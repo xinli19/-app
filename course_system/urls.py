@@ -22,9 +22,13 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/persons/', include('apps.persons.urls')),
+    path('api/evaluations/', include('apps.evaluations.urls')),
     path('api/courses/', include('apps.courses.urls')),
     path('api/students/', include('apps.students.urls')),
-    path('api/person-roles/', include('apps.persons.role_urls')),
+    path('api/announcements/', include('apps.announcements.urls')),
+    path('api/followups/', include('apps.followups.urls_v1')),
+    path('api/notifications/', include('apps.notifications.urls')),
+    path('api/v1/', include('apps.reminders.urls')),
 ]
 
 if settings.DEBUG:

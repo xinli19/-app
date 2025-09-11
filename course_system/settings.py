@@ -43,9 +43,12 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.persons',
     'apps.courses',
+    'apps.evaluations',
     'apps.students',
-    # 第三方
-    'rest_framework',
+    'apps.reminders',
+    'apps.announcements',
+    'apps.followups',
+    'apps.notifications',
 ]
 
 MIDDLEWARE = [
