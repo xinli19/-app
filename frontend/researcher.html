@@ -47,6 +47,12 @@
                             <span class="nav-text">工作量统计</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="#tasks" class="nav-link" data-section="tasks">
+                            <span class="nav-icon">🧩</span>
+                            <span class="nav-text">点评任务</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </aside>
@@ -134,7 +140,10 @@
                         </div>
                         
                         <div class="filter-group">
-                            <label for="pieceFilter">曲目刻度</label>
+                            <label for="pieceSearch">曲目</label>
+                            <!-- 新增：曲目关键字输入，支持模糊搜索 -->
+                            <input type="text" id="pieceSearch" placeholder="输入曲目关键词进行搜索">
+                            <!-- 保留选择框用于展示匹配结果 -->
                             <select id="pieceFilter">
                                 <option value="">全部曲目</option>
                                 <!-- 曲目选项将通过JS动态加载 -->
@@ -192,10 +201,89 @@
                 <h2>工作量统计</h2>
                 <p>工作量统计功能开发中...</p>
             </section>
+
+            <!-- 新增：点评任务管理模块（修复：移动到 main 内部） -->
+            <section id="tasks-section" class="content-section">
+                <!-- 任务筛选区 -->
+                <div class="section-header">
+                  <h2>点评任务</h2>
+                  <div class="actions">
+                    <!-- 批次筛选输入 -->
+                    <input id="taskBatchInput" type="text" placeholder="按批次ID过滤" style="width: 240px; margin-right: 8px;" />
+                    <button id="taskBatchApplyBtn" class="btn">应用</button>
+                    <!-- 现有“新建任务”按钮 -->
+                    <button class="btn btn-secondary" id="refreshTasksBtn">
+                        <span class="btn-icon">🔄</span>
+                        刷新列表
+                    </button>
+                    <button class="btn btn-primary" id="newTaskBtn">
+                        <span class="btn-icon">➕</span>
+                        新建任务
+                    </button>
+                    <!-- 新增“创建任务批次” -->
+                    <button id="openBatchCreatorBtn" class="btn btn-primary">创建任务批次</button>
+                </div>
+                </div>
+
+                <div class="filters-section">
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label for="taskStatusFilter">任务状态</label>
+                            <select id="taskStatusFilter">
+                                <option value="">全部</option>
+                                <option value="pending">未完成</option>
+                                <option value="completed">已完成</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="taskAssigneeFilter">负责人教师</label>
+                            <select id="taskAssigneeFilter">
+                                <option value="">全部教师</option>
+                                <!-- 选项由JS加载 -->
+                            </select>
+                        </div>
+                        <div class="filter-group search-group">
+                            <label for="taskSearchInput">搜索</label>
+                            <input type="text" id="taskSearchInput" placeholder="学员昵称/教师姓名">
+                        </div>
+                    </div>
+                    <div class="filters-row">
+                        <div class="filter-actions">
+                            <button class="btn btn-secondary" id="clearTaskFiltersBtn">清空筛选</button>
+                            <button class="btn btn-primary" id="applyTaskFiltersBtn">应用筛选</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="evaluations-container">
+                    <div class="evaluations-header">
+                        <div class="batch-actions">
+                            <span>任务列表</span>
+                        </div>
+                        <div class="sort-controls">
+                            <label>排序：</label>
+                            <select id="taskSortBy">
+                                <option value="-created_at">创建时间（新到旧）</option>
+                                <option value="created_at">创建时间（旧到新）</option>
+                                <option value="-updated_at">更新时间（新到旧）</option>
+                                <option value="updated_at">更新时间（旧到新）</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="evaluations-list" id="tasksList">
+                        <div class="loading" id="tasksLoading">加载中...</div>
+                    </div>
+
+                    <div class="pagination" id="tasksPagination">
+                        <!-- 分页按钮JS生成 -->
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- 发布/编辑公告模态框 -->
+    <!-- 发布/编辑公告模态框（保持原位置不变） -->
     <div class="modal" id="announcementModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -347,8 +435,97 @@
         </div>
     </div>
 
-    <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/researcher.js"></script>
+    
 </body>
 </html>
+
+<!-- 新增：新建点评任务模态框（修复：移动到 body 内且放在脚本之前） -->
+<div class="modal" id="taskModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="taskModalTitle">新建点评任务</h3>
+            <button class="modal-close" id="taskModalCloseBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="taskForm">
+                <div class="form-group">
+                    <label for="taskStudentSearch">学员（搜索后选择） *</label>
+                    <input type="text" id="taskStudentSearch" placeholder="输入学员昵称/小鹅通ID/备注名关键词">
+                    <select id="taskStudentSelect">
+                        <option value="">请选择学员</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskAssigneeSelect">负责人教师 *</label>
+                    <select id="taskAssigneeSelect" required>
+                        <option value="">请选择教师</option>
+                        <!-- 选项由JS加载 -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskNote">备注</label>
+                    <textarea id="taskNote" rows="4" placeholder="可填写分配原因、任务重点等"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="taskModalCancelBtn">取消</button>
+            <button type="submit" class="btn btn-primary" id="taskModalSubmitBtn" form="taskForm">创建任务</button>
+        </div>
+    </div>
+</div>
+
+<!-- 将脚本引用保持在所有模态框之后 -->
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/researcher.js"></script>
+</body>
+</html>
+
+<!-- 批次创建模态框 -->
+<div id="batchModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>创建点评任务批次</h3>
+      <button id="batchCloseBtn" class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>负责人教师</label>
+        <select id="batchAssigneeSelect">
+          <option value="">请选择教师</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>批次备注</label>
+        <textarea id="batchNote" rows="2" placeholder="填入本批次备注（可选）"></textarea>
+      </div>
+      <hr />
+      <div class="form-row">
+        <label>搜索学员</label>
+        <div style="display:flex; gap:8px;">
+          <input id="batchStudentSearch" type="text" placeholder="输入学员昵称关键词" />
+          <button id="batchStudentSearchBtn" class="btn">搜索</button>
+        </div>
+      </div>
+      <div id="batchStudentResults" class="list" style="max-height:180px; overflow:auto; margin-top:8px;"></div>
+
+      <div style="margin-top:12px;">
+        <h4>待发送列表（<span id="batchSelectedCount">0</span>）</h4>
+        <div id="batchSelectedList" class="list" style="max-height:200px; overflow:auto;"></div>
+      </div>
+
+      <hr />
+      <div>
+        <button id="importFromHistoryBtn" class="btn">从历史批次导入</button>
+        <div id="batchHistoryList" class="list" style="max-height:160px; overflow:auto; margin-top:6px; display:none;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="batchCancelBtn" class="btn">取消</button>
+      <button id="sendBatchBtn" class="btn btn-primary">一键发送</button>
+    </div>
+  </div>
+</div>

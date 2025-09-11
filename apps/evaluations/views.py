@@ -13,6 +13,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime, parse_date
+from django.db.models import Count, Min, Max  # 新增聚合
 
 from .models import EvaluationTask, FeedbackRecord, FeedbackPieceDetail
 from .serializers import EvaluationTaskSerializer, FeedbackRecordSerializer, FeedbackPieceDetailSerializer
@@ -68,6 +69,62 @@ class EvaluationTaskViewSet(viewsets.ModelViewSet):
             {'detail': 'Not implemented: submit feedback pending design.'},
             status=status.HTTP_501_NOT_IMPLEMENTED
         )
+
+    @action(detail=False, methods=['post'], url_path='bulk')
+    def bulk_create_tasks(self, request):
+        """
+        批量创建点评任务（同一批次）
+        Body:
+        {
+          "assignee": "<uuid>",
+          "students": ["<uuid>", ...],
+          "note": "批次备注(可选)",
+          "batch_id": "<uuid>(可选)"
+        }
+        """
+        data = request.data or {}
+        assignee_id = data.get('assignee')
+        students = data.get('students') or []
+        note = data.get('note') or None
+        batch_id = data.get('batch_id') or str(uuid.uuid4())
+
+        if not assignee_id:
+            return Response({"detail": "assignee is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(students, (list, tuple)) or len(students) == 0:
+            return Response({"detail": "students must be a non-empty array"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 基本UUID格式校验（防止数据库层异常）
+        try:
+            uuid.UUID(str(assignee_id))
+            for sid in students:
+                uuid.UUID(str(sid))
+        except (ValueError, TypeError):
+            return Response({"detail": "Invalid UUID in assignee or students"}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = timezone.now()
+        person_id = getattr(request.user, 'person_id', None)
+
+        objs = []
+        for sid in students:
+            objs.append(EvaluationTask(
+                batch_id=batch_id,
+                student_id=sid,
+                assignee_id=assignee_id,
+                status='pending',
+                source='researcher',
+                note=note,
+                created_at=now,
+                updated_at=now,
+                created_by_id=person_id,
+                updated_by_id=person_id,
+            ))
+
+        EvaluationTask.objects.bulk_create(objs, batch_size=1000)
+
+        return Response({
+            "batch_id": batch_id,
+            "created": len(objs)
+        }, status=status.HTTP_201_CREATED)
 
 class FeedbackPagination(PageNumberPagination):
     page_query_param = 'page'
@@ -287,4 +344,63 @@ class WorkloadsView(APIView):
             'total_feedbacks': total_count,
             'limit': limit,
             'records': data,
+        })
+
+# 批次列表与详情视图
+from rest_framework.views import APIView
+
+class EvaluationTaskBatchListView(APIView):
+    """
+    批次列表（最近的批次摘要）
+    GET /api/v1/eval-task-batches/?limit=20
+    返回：[{ batch_id, count, first_created_at, last_created_at }]
+    """
+    def get(self, request):
+        try:
+            limit = int(request.query_params.get('limit', 20))
+        except ValueError:
+            limit = 20
+        limit = max(1, min(limit, 200))
+
+        qs = (EvaluationTask.objects
+              .filter(deleted_at__isnull=True, batch_id__isnull=False)
+              .values('batch_id')
+              .annotate(
+                  count=Count('id'),
+                  first_created_at=Min('created_at'),
+                  last_created_at=Max('created_at'),
+              )
+              .order_by('-last_created_at')[:limit])
+
+        return Response({"items": list(qs)})
+
+class EvaluationTaskBatchDetailView(APIView):
+    """
+    批次详情（学生清单等）
+    GET /api/v1/eval-task-batches/{batch_id}/
+    """
+    def get(self, request, batch_id):
+        try:
+            uuid.UUID(str(batch_id))
+        except (ValueError, TypeError):
+            return Response({"detail": "Invalid batch_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        tasks_qs = (EvaluationTask.objects.filter(deleted_at__isnull=True, batch_id=batch_id)
+                    .select_related('student', 'assignee')
+                    .order_by('created_at'))
+        items = [{
+            "task_id": str(t.id),
+            "student": str(t.student_id),
+            "student_nickname": getattr(t.student, 'nickname', None),
+            "assignee": str(t.assignee_id),
+            "assignee_name": getattr(t.assignee, 'name', None),
+            "note": t.note,
+            "status": t.status,
+            "created_at": t.created_at,
+        } for t in tasks_qs]
+
+        return Response({
+            "batch_id": str(batch_id),
+            "count": len(items),
+            "items": items
         })

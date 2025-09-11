@@ -11,6 +11,7 @@ from .models import Course, Lesson, Piece, CourseVersion
 from .serializers import (
     CourseSerializer, LessonSerializer, PieceSerializer, CourseVersionSerializer
 )
+from rest_framework.filters import SearchFilter  # 新增
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -87,7 +88,7 @@ class PieceViewSet(viewsets.ModelViewSet):
     """
     queryset = Piece.objects.filter(deleted_at__isnull=True)
     serializer_class = PieceSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, SearchFilter]  # 修改：加入 SearchFilter
     filterset_fields = ['course', 'lesson', 'status', 'attribute', 'is_required']
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'created_at']
