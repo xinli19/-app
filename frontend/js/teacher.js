@@ -27,6 +27,9 @@ class TeacherApp {
     this.restoreBoardCollapsed();
 
     await this.loadBoard(); // 并行拉取公告与提醒
+
+    this.setupTabs();
+    this.switchTab("remindersTab");
   }
 
   bindEvents() {
