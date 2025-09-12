@@ -22,6 +22,18 @@ class ResearcherApp {
       ordering: "-created_at",
     };
     this.evalPage = { page: 1, size: 20, total: 0 };
+    // 新增：教研提醒列表状态与分页
+    this.reminders = [];
+    this.reminderQuery = {
+      page: 1,
+      size: 20,
+      q: "",
+      only_active: true,
+      ordering: "-created_at",
+    };
+    this.reminderPage = { page: 1, size: 20, total: 0 };
+    // ... existing code ...
+    this.init();
 
     // 新增：点评任务列表状态
     this.tasks = [];
@@ -89,6 +101,20 @@ class ResearcherApp {
         this.taskQuery.batch_id = batchInput?.value?.trim() || "";
         this.taskQuery.page = 1;
         this.loadTasks();
+      });
+    }
+    // 公告管理相关事件
+    document
+      .getElementById("newAnnouncementBtn")
+      .addEventListener("click", () => {
+        this.showAnnouncementModal();
+      });
+
+    // 教研提醒：创建按钮
+    const newReminderBtn = document.getElementById("newReminderBtn");
+    if (newReminderBtn) {
+      newReminderBtn.addEventListener("click", () => {
+        this.openReminderModal(null); // 无点评ID -> 通用创建
       });
     }
     // 打开批次创建
@@ -762,13 +788,174 @@ class ResearcherApp {
     const date = new Date(dateString);
     return date.toLocaleString("zh-CN");
   }
-
-  // 其他模块的占位方法
-  loadReminders() {
-    console.log("加载教研提醒数据...");
-    // TODO: 实现教研提醒数据加载
+  getReminderCategoryText(value) {
+    const map = {
+      poor_effect: "教学效果差",
+      attitude: "学员态度问题",
+      injury: "有伤病",
+      other: "其他",
+    };
+    return map[value] || value || "";
+  }
+  getUrgencyText(value) {
+    const map = {
+      urgent: "紧急需处理",
+      normal: "不紧急需留意",
+    };
+    return map[value] || value || "";
   }
 
+  // 其他模块的占位方法
+  async loadReminders() {
+    console.log("加载教研提醒数据...");
+    try {
+      const params = {
+        page: this.reminderQuery.page || 1,
+        size: this.reminderQuery.size || 20,
+        ordering: this.reminderQuery.ordering || "-created_at",
+        recipient_me: 1, // 只看“我”的收件箱
+        include_only_active: 1, // 仅生效提醒
+        to_research: 1, // 教研视图
+      };
+      if (this.reminderQuery.q) params.q = this.reminderQuery.q;
+      if (this.reminderQuery.start) params.start = this.reminderQuery.start;
+      if (this.reminderQuery.end) params.end = this.reminderQuery.end;
+      if (this.reminderQuery.category)
+        params.category = this.reminderQuery.category;
+      if (this.reminderQuery.urgency)
+        params.urgency = this.reminderQuery.urgency;
+      if (this.reminderQuery.course_id)
+        params.course_id = this.reminderQuery.course_id;
+
+      const resp = await Utils.get("/api/v1/reminders/", params);
+
+      // 兼容不同返回结构
+      let items = [];
+      let total = 0;
+      let page = params.page;
+      let size = params.size;
+
+      if (Array.isArray(resp)) {
+        items = resp;
+        total = resp.length;
+        page = 1;
+        size = resp.length || params.size;
+      } else if (resp && Array.isArray(resp.items)) {
+        items = resp.items;
+        total = typeof resp.total === "number" ? resp.total : items.length;
+        page = resp.page || page;
+        size = resp.size || size;
+      } else if (resp && Array.isArray(resp.results)) {
+        items = resp.results;
+        total = typeof resp.count === "number" ? resp.count : items.length;
+        // DRF 默认 page/size 不一定回传
+      }
+
+      this.reminders = items || [];
+      this.reminderPage = { page, size, total };
+      this.renderRemindersList();
+    } catch (e) {
+      console.error("加载教研提醒失败:", e);
+      this.showError("加载教研提醒失败，请稍后重试");
+      this.reminders = [];
+      this.reminderPage = {
+        page: 1,
+        size: this.reminderQuery.size || 20,
+        total: 0,
+      };
+      this.renderRemindersList();
+    }
+  }
+
+  renderRemindersList() {
+    const container = document.getElementById("remindersList");
+    if (!container) return;
+
+    const items = this.reminders || [];
+    if (!items.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <h3>暂无提醒</h3>
+          <p>当前没有新的教研提醒。</p>
+        </div>
+      `;
+      return;
+    }
+
+    const html = items
+      .map((r) => {
+        const categoryText = this.getReminderCategoryText(r.category);
+        const urgencyText = this.getUrgencyText(r.urgency);
+        const createdAt = this.formatDateTime(r.created_at);
+        const startAt = this.formatDateTime(r.start_at);
+        const endAt = this.formatDateTime(r.end_at);
+
+        return `
+          <div class="card reminder-card">
+            <div class="card-header">
+              <span class="badge urgency ${r.urgency || ""}">${this.escapeHtml(
+          urgencyText
+        )}</span>
+              <span class="badge category ${
+                r.category || ""
+              }">${this.escapeHtml(categoryText)}</span>
+              <span class="timestamp">创建：${this.escapeHtml(createdAt)}</span>
+            </div>
+            <div class="card-body">
+              <div class="reminder-content">${this.escapeHtml(
+                r.content || ""
+              )}</div>
+              <div class="reminder-meta">
+                <span>生效：${this.escapeHtml(startAt || "-")}</span>
+                <span>截至：${this.escapeHtml(endAt || "—")}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+
+    // 分页
+    const page = this.reminderPage.page || 1;
+    const size = this.reminderPage.size || 20;
+    const total = this.reminderPage.total || 0;
+    const totalPages = Math.max(1, Math.ceil(total / size));
+
+    container.innerHTML = `
+      <div class="reminders-wrapper">
+        ${html}
+      </div>
+      <div class="pagination">
+        <button class="btn btn-secondary" id="remPrevPage" ${
+          page <= 1 ? "disabled" : ""
+        }>上一页</button>
+        <span class="page-info">第 ${page} 页 / 共 ${totalPages} 页（共 ${total} 条）</span>
+        <button class="btn btn-secondary" id="remNextPage" ${
+          page >= totalPages ? "disabled" : ""
+        }>下一页</button>
+      </div>
+    `;
+
+    const prevBtn = document.getElementById("remPrevPage");
+    const nextBtn = document.getElementById("remNextPage");
+    if (prevBtn) {
+      prevBtn.addEventListener("click", () => {
+        if (this.reminderQuery.page > 1) {
+          this.reminderQuery.page -= 1;
+          this.loadReminders();
+        }
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        if (this.reminderPage.page < totalPages) {
+          this.reminderQuery.page += 1;
+          this.loadReminders();
+        }
+      });
+    }
+  }
+  // ... existing code ...
   async loadEvaluations() {
     console.log("加载点评管理数据...");
     try {
@@ -1094,13 +1281,363 @@ class ResearcherApp {
                                 )}">${researcherFeedback || "-"}</span></div>
                             </div>
                         </div>
+                        <div class="evaluation-actions" style="margin-top:8px; display:flex; gap:8px;">
+                          <button class="btn btn-small btn-secondary" data-action="feedback" data-id="${
+                            item.id
+                          }">填写/编辑教研反馈</button>
+                          <button class="btn btn-small btn-primary" data-action="reminder" data-id="${
+                            item.id
+                          }">创建提醒</button>
+                        </div>
                     </div>
                 `;
       })
       .join("");
 
     container.innerHTML = html;
+
+    // 调试：渲染时打印当前列表的 id 与类型
+    console.debug(
+      "renderEvaluationsList: evaluations ids",
+      (this.evaluations || []).map((x) => `${x.id}:${typeof x.id}`)
+    );
+
+    // 事件绑定：打开反馈/提醒模态框
+    container.querySelectorAll('[data-action="feedback"]').forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id"); // 保留字符串
+        console.debug("click feedback button:", {
+          recordId: id,
+          type: typeof id,
+        });
+        this.openFeedbackModal(id);
+      });
+    });
+    container.querySelectorAll('[data-action="reminder"]').forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id"); // 保留字符串
+        console.debug("click reminder button:", {
+          recordId: id,
+          type: typeof id,
+        });
+        this.openReminderModal(id);
+      });
+    });
   }
+  // ... existing code ...
+  bindModalEvents() {
+    // 公告模态框事件绑定
+    const modal = document.getElementById("announcementModal");
+    const closeBtn = document.getElementById("modalCloseBtn");
+    const cancelBtn = document.getElementById("modalCancelBtn");
+    const form = document.getElementById("announcementForm");
+
+    [closeBtn, cancelBtn].forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.hideAnnouncementModal();
+      });
+    });
+
+    // 点击模态框外部关闭
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        this.hideAnnouncementModal();
+      }
+    });
+
+    // 表单提交
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      this.saveAnnouncement();
+    });
+
+    // === 新增：教研反馈模态框 ===
+    const feedbackModal = document.getElementById("feedbackModal");
+    const feedbackCloseBtn = document.getElementById("feedbackModalCloseBtn");
+    const feedbackCancelBtn = document.getElementById("feedbackModalCancelBtn");
+    const feedbackForm = document.getElementById("feedbackForm");
+    [feedbackCloseBtn, feedbackCancelBtn].forEach((btn) => {
+      if (btn) {
+        btn.addEventListener("click", () => this.hideFeedbackModal());
+      }
+    });
+    if (feedbackModal) {
+      feedbackModal.addEventListener("click", (e) => {
+        if (e.target === feedbackModal) this.hideFeedbackModal();
+      });
+    }
+    if (feedbackForm) {
+      feedbackForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.saveFeedback();
+      });
+    }
+
+    // === 新增：创建提醒模态框 ===
+    const reminderModal = document.getElementById("createReminderModal");
+    const reminderCloseBtn = document.getElementById("reminderModalCloseBtn");
+    const reminderCancelBtn = document.getElementById("reminderModalCancelBtn");
+    const reminderForm = document.getElementById("reminderForm");
+    [reminderCloseBtn, reminderCancelBtn].forEach((btn) => {
+      if (btn) {
+        btn.addEventListener("click", () => this.hideReminderModal());
+      }
+    });
+    if (reminderModal) {
+      reminderModal.addEventListener("click", (e) => {
+        if (e.target === reminderModal) this.hideReminderModal();
+      });
+    }
+    if (reminderForm) {
+      reminderForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.saveReminder();
+      });
+    }
+  }
+  // ... existing code ...
+  openFeedbackModal(recordId) {
+    // 调试：输出传入的 recordId 和当前列表 ids
+    console.debug("openFeedbackModal called with:", {
+      recordId,
+      type: typeof recordId,
+    });
+    const ids = (this.evaluations || []).map((x) => String(x.id));
+    console.debug("openFeedbackModal evaluations ids:", ids);
+
+    // 统一用字符串比较，避免类型不一致导致查找失败
+    const item = this.evaluations.find(
+      (x) => String(x.id) === String(recordId)
+    );
+    if (!item) {
+      console.warn(
+        "openFeedbackModal: item not found. Available ids with types:",
+        (this.evaluations || []).map((x) => ({ id: x.id, type: typeof x.id }))
+      );
+      this.showError("未找到该点评记录");
+      return;
+    }
+    // 预填信息
+    const studentName =
+      item.student_nickname || item.student?.nickname || item.student || "-";
+    const teacherName =
+      item.teacher_name || item.teacher?.name || item.teacher || "-";
+    const createdAt = this.formatDateTime(item.created_at) || "-";
+    const teacherContent = (
+      item.content_text ||
+      item.teacher_content ||
+      ""
+    ).toString();
+    const researcherFeedback = (item.researcher_feedback || "").toString();
+
+    document.getElementById("feedbackRecordId").value = String(item.id);
+    document.getElementById("feedbackStudentName").textContent = studentName;
+    document.getElementById("feedbackTeacherName").textContent = teacherName;
+    document.getElementById("feedbackCreatedAt").textContent = createdAt;
+    document.getElementById("feedbackTeacherContent").textContent =
+      teacherContent;
+    document.getElementById("researcherFeedback").value = researcherFeedback;
+
+    document.getElementById("feedbackModal").classList.add("show");
+  }
+  // ... existing code ...
+  hideFeedbackModal() {
+    const m = document.getElementById("feedbackModal");
+    if (m) m.classList.remove("show");
+  }
+  // ... existing code ...
+  async saveFeedback() {
+    const id = (document.getElementById("feedbackRecordId").value || "").trim();
+    const content = (
+      document.getElementById("researcherFeedback").value || ""
+    ).trim();
+    if (!id) {
+      this.showError("未找到点评记录ID");
+      return;
+    }
+    if (!content) {
+      this.showError("请填写教研反馈内容");
+      return;
+    }
+    // 调试：打印即将调用的 PATCH URL 使用的 id（应为 UUID 字符串）
+    console.debug("saveFeedback: using id for PATCH:", id, "type:", typeof id);
+
+    try {
+      await Utils.request(`/api/v1/feedbacks/${encodeURIComponent(id)}/`, {
+        method: "PATCH",
+        body: JSON.stringify({ researcher_feedback: content }),
+      });
+      this.hideFeedbackModal();
+      this.showSuccess("教研反馈已保存");
+      // 保存后刷新当前列表
+      await this.loadEvaluations();
+    } catch (e) {
+      console.error(e);
+      this.showError(e.message || "保存失败，请稍后重试");
+    }
+  }
+  // ... existing code ...
+  openReminderModal(recordId) {
+    // 调试：输出传入的 recordId 和当前列表 ids
+    console.debug("openReminderModal called with:", {
+      recordId,
+      type: typeof recordId,
+    });
+    const ids = (this.evaluations || []).map((x) => String(x.id));
+    console.debug("openReminderModal evaluations ids:", ids);
+
+    const item = this.evaluations.find(
+      (x) => String(x.id) === String(recordId)
+    );
+
+    const feedbackInput = document.getElementById("reminderFeedbackIds");
+    const recipientsBox = document.getElementById("reminderRecipients");
+    const cat = document.getElementById("reminderCategory");
+    const urg = document.getElementById("reminderUrgency");
+
+    if (cat) cat.value = "other";
+    if (urg) urg.value = "normal";
+    document.getElementById("reminderContent").value = "";
+
+    if (item) {
+      // 场景1：从点评记录创建（沿用原逻辑）
+      if (feedbackInput) feedbackInput.value = String(item.id);
+      const teacherName =
+        item.teacher_name || item.teacher?.name || item.teacher || "-";
+      if (recipientsBox) {
+        recipientsBox.innerHTML = `<span class="tag">接收人：教师 ${this.escapeHtml(
+          teacherName
+        )}</span>`;
+        recipientsBox.dataset.mode = "fixed"; // 固定接收人
+        recipientsBox.dataset.receiverId = String(item.teacher || "");
+      }
+    } else {
+      // 场景2：通用创建（从提醒模块入口）
+      if (feedbackInput) feedbackInput.value = "";
+      if (recipientsBox) {
+        recipientsBox.innerHTML = `
+          <div class="field">
+            <label>选择接收人（教师）</label>
+            <select id="reminderReceiverSelect">
+              <option value="">请选择接收教师</option>
+            </select>
+          </div>
+        `;
+        recipientsBox.dataset.mode = "select";
+        recipientsBox.dataset.receiverId = "";
+      }
+      // 加载教师列表
+      this.loadReminderReceiverOptions().catch((e) =>
+        console.error("加载接收人失败：", e)
+      );
+    }
+
+    document.getElementById("createReminderModal").classList.add("show");
+  }
+  async loadReminderReceiverOptions() {
+    const select = document.getElementById("reminderReceiverSelect");
+    if (!select) return;
+    try {
+      const resp = await Utils.get("/api/persons/roles/", {
+        role: "teacher",
+        size: 1000,
+      });
+      const items = resp.results || resp || [];
+      const options = ['<option value="">请选择接收教师</option>'].concat(
+        items.map(
+          (r) =>
+            `<option value="${r.person}">${this.escapeHtml(
+              r.person_name || r.person
+            )}</option>`
+        )
+      );
+      select.innerHTML = options.join("");
+      select.addEventListener("change", () => {
+        const box = document.getElementById("reminderRecipients");
+        if (box) box.dataset.receiverId = select.value || "";
+      });
+    } catch (e) {
+      console.error("加载接收教师失败:", e);
+      select.innerHTML = '<option value="">加载教师失败，请稍后重试</option>';
+    }
+  }
+  // ... existing code ...
+  // ... existing code ...
+  hideReminderModal() {
+    const m = document.getElementById("createReminderModal");
+    if (m) m.classList.remove("show");
+  }
+  // ... existing code ...
+  async saveReminder() {
+    // 用字符串读取，避免 parseInt 造成 NaN 或类型不匹配
+    const feedbackId = document.getElementById("reminderFeedbackIds").value;
+    // 调试：隐藏域中的反馈ID 和当前列表 ids
+    console.debug("saveReminder feedbackId from hidden:", {
+      feedbackId,
+      type: typeof feedbackId,
+    });
+    console.debug(
+      "saveReminder evaluations ids:",
+      (this.evaluations || []).map((x) => String(x.id))
+    );
+
+    const category = document.getElementById("reminderCategory").value || "";
+    const urgency = document.getElementById("reminderUrgency").value || "";
+    const content = (
+      document.getElementById("reminderContent").value || ""
+    ).trim();
+
+    if (!category) return this.showError("请选择提醒类别");
+    if (!urgency) return this.showError("请选择紧急程度");
+    if (!content) return this.showError("请填写提醒内容");
+
+    // 发送人与审计后端会自动填充，这里不强制传 sender
+    let payload = { category, urgency, content };
+
+    // 如果来自点评记录
+    const item =
+      (feedbackId &&
+        this.evaluations.find((x) => String(x.id) === String(feedbackId))) ||
+      null;
+    if (item) {
+      payload = {
+        ...payload,
+        receiver: item.teacher, // 点评教师为接收人
+        student: item.student || null,
+        feedback: item.id,
+      };
+    } else {
+      // 通用创建：必须选择接收人
+      const box = document.getElementById("reminderRecipients");
+      const receiverId =
+        (box && (box.dataset.receiverId || "").trim()) ||
+        (document.getElementById("reminderReceiverSelect")?.value || "").trim();
+      if (!receiverId) {
+        return this.showError("请选择提醒的接收教师");
+      }
+      payload = {
+        ...payload,
+        receiver: receiverId,
+        student: null,
+        feedback: null,
+      };
+    }
+
+    try {
+      await Utils.request("/api/v1/reminders/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      this.hideReminderModal();
+      this.showSuccess("提醒已创建");
+      // 创建后刷新列表
+      await this.loadReminders();
+    } catch (e) {
+      console.error(e);
+      this.showError(e.message || "创建提醒失败，请稍后重试");
+    }
+  }
+  // ... existing code ...
 
   renderEvaluationsPagination() {
     const wrapper = document.getElementById("evaluationsPagination");
@@ -1271,6 +1808,20 @@ class ResearcherApp {
       .join("");
 
     container.innerHTML = html;
+
+    // 事件绑定：打开反馈/提醒模态框
+    container.querySelectorAll('[data-action="feedback"]').forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id"); // 不再 parseInt，保持字符串
+        this.openFeedbackModal(id);
+      });
+    });
+    container.querySelectorAll('[data-action="reminder"]').forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id"); // 不再 parseInt，保持字符串
+        this.openReminderModal(id);
+      });
+    });
   }
 
   renderTasksPagination() {

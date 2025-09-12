@@ -144,7 +144,13 @@ class Reminder(AuditModel):
         内部工具：取人员的“首选角色字母”（T/R/O），用于推断 e2e_type。
         若人员具备多角色，按优先级 Teacher > Researcher > Operator 选取。
         """
-        roles = person.roles.values_list('role', flat=True)
+        if not person:
+            return 'O'
+        try:
+            roles = set(person.roles.values_list('role', flat=True))
+        except Exception:
+            # 避免因 person 结构异常或关联未就绪导致的 AttributeError
+            return 'O'
         if RoleType.TEACHER in roles:
             return 'T'
         if RoleType.RESEARCHER in roles:
@@ -162,6 +168,34 @@ class Reminder(AuditModel):
         if not self.e2e_type:
             self.e2e_type = self.compute_e2e_type()
         super().save(*args, **kwargs)
+
+    def compute_e2e_type(self):
+        """
+        根据发送人与接收人角色计算端到端类别并返回（不保存）。
+        多接收人场景：优先取 primary receiver，如为空则取第一个子表接收人。
+        """
+        sender_letter = self._pick_role_letter(self.sender)
+        # 选择接收人来源
+        recv_person = self.receiver
+        if recv_person is None and getattr(self, 'pk', None):
+            # 仅在对象已保存（有主键）时再尝试读取子表，否则跳过以避免异常
+            try:
+                rr = self.recipients.first()
+                recv_person = rr.person if rr else None
+            except Exception:
+                recv_person = None
+        recv_letter = self._pick_role_letter(recv_person) if recv_person else 'O'
+        pair = f"{sender_letter}2{recv_letter}"
+        mapping = {
+            'T2R': EndToEndType.T2R,
+            'T2O': EndToEndType.T2O,
+            'R2T': EndToEndType.R2T,
+            'R2O': EndToEndType.R2O,
+            'O2T': EndToEndType.O2T,
+            'O2R': EndToEndType.O2R,
+            'O2O': EndToEndType.O2O,
+        }
+        return mapping.get(pair, EndToEndType.O2R)
 
     @transaction.atomic
     def set_recipients(self, persons, clear_existing=True):
@@ -249,27 +283,3 @@ class ReminderRecipient(AuditModel):
         self.read_at = at or timezone.now()
         if save:
             self.save(update_fields=['is_read', 'read_at', 'updated_at', 'updated_by'])
-
-
-    def compute_e2e_type(self):
-        """
-        根据发送人与接收人角色计算端到端类别并返回（不保存）。
-        多接收人场景：优先取 primary receiver，如为空则取第一个子表接收人。
-        """
-        sender_letter = self._pick_role_letter(self.sender)
-        # 选择接收人来源
-        recv_person = self.receiver
-        if recv_person is None:
-            recv_person = self.recipients.first().person if hasattr(self, 'recipients') else None
-        recv_letter = self._pick_role_letter(recv_person) if recv_person else 'O'
-        pair = f"{sender_letter}2{recv_letter}"
-        mapping = {
-            'T2R': EndToEndType.T2R,
-            'T2O': EndToEndType.T2O,
-            'R2T': EndToEndType.R2T,
-            'R2O': EndToEndType.R2O,
-            'O2T': EndToEndType.O2T,
-            'O2R': EndToEndType.O2R,
-            'O2O': EndToEndType.O2O,
-        }
-        return mapping.get(pair, EndToEndType.O2R)

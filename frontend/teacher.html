@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>教师工作台</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="css/researcher.css" rel="stylesheet" />
+  <style>
+    /* 现有样式保持 */
+    /* 选项卡的简单样式（尽量轻量） */
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .tab-btn.active { background: #428bca; color: #fff; border-color: #428bca; }
+    .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .toolbar input, .toolbar select { padding: 6px 8px; border: 1px solid #d5d5d5; border-radius: 4px; }
+    .muted { color: #888; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-brand">教师工作台</div>
+    <div class="navbar-actions">
+      <button class="btn" id="logoutBtn">退出登录</button>
+    </div>
+  </header>
+
+  <section id="teacherBoard" class="teacher-board">
+    <div class="board-header">
+      <div>
+        <strong>教师公告栏</strong>
+        <span style="margin-left: 8px; color: #888;">公告与收到的提醒（按时间排序）</span>
+      </div>
+      <div class="board-actions">
+        <button class="btn btn-secondary" id="toggleBoardBtn">收起</button>
+        <button class="btn btn-primary" id="refreshBoardBtn">刷新</button>
+      </div>
+    </div>
+
+    <div class="board-content">
+      <div class="section">
+        <h4>公告</h4>
+        <div id="announcementsList">
+          <div class="list-row">加载中...</div>
+        </div>
+        <div class="board-pagination">
+          <button class="btn btn-secondary" id="annPrevBtn">上一页</button>
+          <span id="annPageInfo">第 1 页</span>
+          <button class="btn btn-secondary" id="annNextBtn">下一页</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h4>收到的提醒</h4>
+        <div id="remindersList">
+          <div class="list-row">加载中...</div>
+        </div>
+        <div class="board-pagination">
+          <button class="btn btn-secondary" id="remPrevBtn">上一页</button>
+          <span id="remPageInfo">第 1 页</span>
+          <button class="btn btn-secondary" id="remNextBtn">下一页</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container" style="padding: 16px;">
+    <!-- 新增：选项卡导航 -->
+    <div class="tabs" id="teacherTabs">
+      <button class="btn btn-secondary tab-btn active" data-tab="remindersTab">教师提醒</button>
+      <button class="btn btn-secondary tab-btn" data-tab="tasksTab">点评任务</button>
+      <button class="btn btn-secondary tab-btn" data-tab="feedbacksTab">查看点评</button>
+    </div>
+
+    <!-- 教师提醒模块 -->
+    <section id="remindersTab" class="section" style="display: block;">
+      <div class="toolbar">
+        <input type="text" id="remInbQ" placeholder="搜索提醒内容/学员昵称/小鹅通ID" />
+        <button class="btn btn-primary" id="remInbSearchBtn">搜索</button>
+        <button class="btn btn-secondary" id="remInbRefresh">刷新</button>
+        <label class="muted">
+          <input type="checkbox" id="remInbSelectAll" />
+          全选
+        </label>
+        <button class="btn" id="remInbMarkReadSelectedBtn">标记所选为已读</button>
+      </div>
+      <div id="remInbList">
+        <div class="list-row">加载中...</div>
+      </div>
+      <div class="board-pagination">
+        <button class="btn btn-secondary" id="remInbPrev">上一页</button>
+        <span id="remInbPageInfo">第 1 页</span>
+        <button class="btn btn-secondary" id="remInbNext">下一页</button>
+      </div>
+    </section>
+
+    <!-- 点评任务模块 -->
+    <section id="tasksTab" class="section" style="display: none;">
+      <div class="toolbar">
+        <label>状态：
+          <select id="taskStatusFilter">
+            <option value="">全部</option>
+            <option value="pending">未完成</option>
+            <option value="completed">已完成</option>
+          </select>
+        </label>
+        <button class="btn btn-secondary" id="tasksRefresh">刷新</button>
+      </div>
+      <div id="tasksList">
+        <div class="list-row">加载中...</div>
+      </div>
+      <div class="board-pagination">
+        <button class="btn btn-secondary" id="tasksPrev">上一页</button>
+        <span id="tasksPageInfo">第 1 页</span>
+        <button class="btn btn-secondary" id="tasksNext">下一页</button>
+      </div>
+    </section>
+
+    <!-- 查看点评模块 -->
+    <section id="feedbacksTab" class="section" style="display: none;">
+      <div class="toolbar">
+        <input type="text" id="fbQ" placeholder="搜索学员/教师/点评正文" />
+        <label>开始：
+          <input type="date" id="fbStart" />
+        </label>
+        <label>结束：
+          <input type="date" id="fbEnd" />
+        </label>
+        <button class="btn btn-primary" id="fbSearchBtn">搜索</button>
+        <button class="btn btn-secondary" id="fbRefresh">刷新</button>
+      </div>
+      <div id="fbList">
+        <div class="list-row">加载中...</div>
+      </div>
+      <div class="board-pagination">
+        <button class="btn btn-secondary" id="fbPrev">上一页</button>
+        <span id="fbPageInfo">第 1 页</span>
+        <button class="btn btn-secondary" id="fbNext">下一页</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/teacher.js"></script>
+</body>
+</html>

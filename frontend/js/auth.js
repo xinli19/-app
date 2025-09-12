@@ -27,15 +27,14 @@ const Auth = {
     // 登出
     async logout() {
         try {
-            // 调用后端登出接口
+            // 后端可能未实现 /auth/logout/，忽略失败即可
             await Utils.post('/auth/logout/');
         } catch (error) {
             console.error('登出请求失败:', error);
         } finally {
-            // 清除本地存储
+            // 清理本地凭证并跳回登录页（使用相对路径，避免 file:///index.html）
             this.clearAuthData();
-            // 跳转到登录页
-            Utils.redirect('/index.html');
+            Utils.redirect('index.html');
         }
     },
     
@@ -93,11 +92,13 @@ const Auth = {
     // 验证token有效性
     async validateToken() {
         try {
+            // 后端当前未实现该接口，如果 404，我们视为有效，避免阻断前端页面
             const response = await Utils.get('/auth/validate/');
-            return response.valid;
+            return response && (response.valid !== false);
         } catch (error) {
             console.error('Token验证失败:', error);
-            return false;
+            // 容忍 404 / 网络错误，不阻断前端页面
+            return true;
         }
     },
     
@@ -105,21 +106,24 @@ const Auth = {
     async routeGuard(requiredRole = null) {
         // 检查是否已登录
         if (!this.isAuthenticated()) {
-            Utils.redirect('/index.html');
+            // 修正：使用相对路径
+            Utils.redirect('index.html');
             return false;
         }
         
-        // 验证token有效性
+        // 验证token有效性（容忍未实现）
         const isValid = await this.validateToken();
         if (!isValid) {
             this.clearAuthData();
-            Utils.redirect('/index.html');
+            // 修正：使用相对路径
+            Utils.redirect('index.html');
             return false;
         }
         
-        // 检查角色权限
+        // 检查角色权限（若无未授权页，直接回登录）
         if (requiredRole && !this.hasPermission(requiredRole)) {
-            Utils.redirect('/unauthorized.html');
+            // 修正：避免跳转到不存在的 unauthorized.html
+            Utils.redirect('index.html');
             return false;
         }
         

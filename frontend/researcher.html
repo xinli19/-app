@@ -99,6 +99,7 @@
             <section id="evaluations-section" class="content-section">
                 <div class="section-header">
                     <h2>学员点评记录列表与教研反馈</h2>
+                    <!-- 下架：刷新列表/导出XLSX 按钮已移除
                     <div class="header-actions">
                         <button class="btn btn-secondary" id="refreshEvaluationsBtn">
                             <span class="btn-icon">🔄</span>
@@ -109,6 +110,7 @@
                             导出XLSX
                         </button>
                     </div>
+                    -->
                 </div>
 
                 <!-- 筛选和搜索区域 -->
@@ -138,24 +140,28 @@
                                 <!-- 课程选项将通过JS动态加载 -->
                             </select>
                         </div>
-                        
+                        <!--
                         <div class="filter-group">
-                            <label for="pieceSearch">曲目</label>
-                            <!-- 新增：曲目关键字输入，支持模糊搜索 -->
-                            <input type="text" id="pieceSearch" placeholder="输入曲目关键词进行搜索">
-                            <!-- 保留选择框用于展示匹配结果 -->
+                            <label for="pieceFilter">曲目</label>
+                            <下架：曲目关键字输入 >
+                            <input type="text" id="pieceSearch" placeholder="输入曲目关键词进行搜索"> >
+                            <! 保留选择框用于展示匹配结果>
                             <select id="pieceFilter">
                                 <option value="">全部曲目</option>
-                                <!-- 曲目选项将通过JS动态加载 -->
+                                <曲目选项将通过JS动态加载 >
                             </select>
                         </div>
-                    </div>
+                    </div>-
+
                     
                     <div class="filters-row">
+                        <下架：通用搜索框 >
+                        <!--
                         <div class="filter-group search-group">
                             <label for="searchInput">搜索</label>
                             <input type="text" id="searchInput" placeholder="学员昵称/学员ID/教师点评内容关键字">
                         </div>
+                        -->
                         
                         <div class="filter-actions">
                             <button class="btn btn-secondary" id="clearFiltersBtn">清空筛选</button>
@@ -180,8 +186,9 @@
                             <select id="sortBy">
                                 <option value="-created_at">创建时间（新到旧）</option>
                                 <option value="created_at">创建时间（旧到新）</option>
-                                <option value="student__nickname">学员昵称</option>
-                                <option value="teacher__name">教师姓名</option>
+                                <!-- 下架：学员昵称、教师姓名 -->
+                                <!-- <option value="student__nickname">学员昵称</option> -->
+                                <!-- <option value="teacher__name">教师姓名</option> -->
                             </select>
                         </div>
                     </div>
@@ -208,10 +215,7 @@
                 <div class="section-header">
                   <h2>点评任务</h2>
                   <div class="actions">
-                    <!-- 批次筛选输入 -->
-                    <input id="taskBatchInput" type="text" placeholder="按批次ID过滤" style="width: 240px; margin-right: 8px;" />
-                    <button id="taskBatchApplyBtn" class="btn">应用</button>
-                    <!-- 现有“新建任务”按钮 -->
+                    >
                     <button class="btn btn-secondary" id="refreshTasksBtn">
                         <span class="btn-icon">🔄</span>
                         刷新列表
@@ -398,10 +402,10 @@
                         <label for="reminderCategory">提醒类别 *</label>
                         <select id="reminderCategory" name="category" required>
                             <option value="">请选择提醒类别</option>
-                            <option value="effect.bad">效果不佳</option>
-                            <option value="progress.slow">进度缓慢</option>
-                            <option value="attitude.poor">态度问题</option>
-                            <option value="technique.issue">技术问题</option>
+                            <option value="poor_effect">教学效果差</option>
+                            <option value="attitude">学员态度问题</option>
+                            <option value="injury">有伤病</option>
+                            <option value="other">其他</option>
                         </select>
                     </div>
                     
@@ -410,8 +414,7 @@
                         <select id="reminderUrgency" name="urgency" required>
                             <option value="">请选择紧急程度</option>
                             <option value="urgent">紧急</option>
-                            <option value="normal">普通</option>
-                            <option value="low">较低</option>
+                            <option value="normal">不紧急</option>
                         </select>
                     </div>
                     

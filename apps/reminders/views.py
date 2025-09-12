@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils.dateparse import parse_datetime, parse_date
 from datetime import datetime, time
+from django.core.exceptions import ObjectDoesNotExist  # 新增：避免关联对象不存在导致 500
+from rest_framework.exceptions import ValidationError  # 新增：用于在创建时返回 400
 
 from .models import Reminder, ReminderRecipient
 from .serializers import ReminderSerializer
@@ -21,6 +23,13 @@ class ReminderViewSet(viewsets.ModelViewSet):
     search_fields = ['content', 'student__nickname', 'student__xiaoetong_id', 'sender__name']
     ordering_fields = ['created_at', 'start_at', 'end_at', 'urgency']
 
+    # 新增：安全获取当前登录用户的 person_id，避免 RelatedObjectDoesNotExist
+    def _safe_me_person_id(self):
+        try:
+            return getattr(self.request.user, 'person_id', None)
+        except Exception:
+            return None
+
     def get_queryset(self):
         qs = super().get_queryset().select_related('sender', 'receiver', 'student').prefetch_related('recipients')
         params = self.request.query_params
@@ -28,7 +37,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
         # 收件箱：recipient_me 优先，其次 recipient_id（用于联调或无 User→Person 时）
         recipient_me = params.get('recipient_me')
         recipient_id = params.get('recipient_id')
-        me_person_id = getattr(self.request.user, 'person_id', None)
+        me_person_id = self._safe_me_person_id()  # 修改：使用安全方法
         target_pid = None
         if recipient_me in ('1', 'true', 'True'):
             target_pid = me_person_id
@@ -87,7 +96,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        me_person_id = getattr(request.user, 'person_id', None)
+        me_person_id = self._safe_me_person_id()  # 修改：使用安全方法
         allowed = False
         if me_person_id:
             if instance.sender_id == me_person_id:
@@ -101,18 +110,50 @@ class ReminderViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        me_person_id = getattr(request.user, 'person_id', None)
+        me_person_id = self._safe_me_person_id()  # 修改：使用安全方法
         if not me_person_id or instance.sender_id != me_person_id:
             return Response({'detail': 'Forbidden: only sender can delete this reminder.'}, status=status.HTTP_403_FORBIDDEN)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_create(self, serializer):
+        """
+        创建提醒时自动补充 sender/审计字段：
+        - 若前端未提供 sender，则默认取当前登录人的 person_id
+        - 填充 created_by/updated_by
+        - 若无法确定 sender（用户未绑定 Person 且前端未显式传），返回 400 而非 500
+        """
+        me_person_id = self._safe_me_person_id()  # 修改：使用安全方法
+        extra = {}
+        # 若未显式传 sender 且也拿不到当前用户的 person -> 返回 400
+        data_sender = serializer.validated_data.get('sender')
+        if not data_sender and not me_person_id:
+            raise ValidationError({'sender': ['当前账号未绑定人员（User 无 Person 关联），且未传 sender。请先为账号绑定人员或在请求体显式传 sender。']})
+        # 若未显式传 sender 且拿到了 person -> 自动补充
+        if not data_sender and me_person_id:
+            extra['sender_id'] = me_person_id
+        # 填充审计字段（可为空）
+        if me_person_id:
+            extra['created_by_id'] = me_person_id
+            extra['updated_by_id'] = me_person_id
+        serializer.save(**extra)
+
+    def perform_update(self, serializer):
+        """
+        更新提醒时自动更新审计字段 updated_by
+        """
+        me_person_id = self._safe_me_person_id()  # 修改：使用安全方法
+        extra = {}
+        if me_person_id:
+            extra['updated_by_id'] = me_person_id
+        serializer.save(**extra)
 
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
         """
         将当前用户在该提醒上的收件状态标记为已读（幂等）
         """
-        me_person_id = getattr(request.user, 'person_id', None)
+        me_person_id = self._safe_me_person_id()  # 修改：使用安全方法
         if not me_person_id:
             return Response({'detail': 'person_id not found on user.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -129,7 +170,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
         标记单条提醒为已读（幂等）
         返回：{ id, read_at }
         """
-        me_person_id = getattr(request.user, 'person_id', None)
+        me_person_id = self._safe_me_person_id()  # 修改：使用安全方法
         if not me_person_id:
             return Response({'detail': 'person_id not found on user.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -148,7 +189,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
         返回：{ "updated": <number> }
         仅更新“当前用户为接收人”的未读项
         """
-        me_person_id = getattr(request.user, 'person_id', None)
+        me_person_id = self._safe_me_person_id()  # 修改：使用安全方法
         if not me_person_id:
             return Response({'detail': 'person_id not found on user.'}, status=status.HTTP_400_BAD_REQUEST)
 

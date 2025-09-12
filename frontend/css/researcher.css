@@ -72,7 +72,56 @@ body {
     background: rgba(255,255,255,0.3);
 }
 
-/* 侧边栏 */
+/* 教师页导航条样式（与教研页 .header 统一风格） */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+
+    /* 与 .header 相同的渐变与投影 */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar .navbar-brand {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.navbar .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 导航条里的按钮采用与 .logout-btn 一致的浅色方案 */
+.navbar .btn {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+.navbar .btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* 教师页主体容器，提供与教研页 main-content 一致的留白体验 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
 .sidebar {
     grid-area: sidebar;
     background: white;

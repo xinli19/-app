@@ -6,6 +6,9 @@ class ReminderSerializer(serializers.ModelSerializer):
         model = Reminder
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at', 'deleted_at', 'e2e_type']
+        extra_kwargs = {
+            'sender': {'required': False},  # 放宽 sender 为非必填
+        }
 
     def create(self, validated_data):
         reminder = super().create(validated_data)
