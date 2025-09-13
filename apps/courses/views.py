@@ -11,7 +11,7 @@ from .models import Course, Lesson, Piece, CourseVersion
 from .serializers import (
     CourseSerializer, LessonSerializer, PieceSerializer, CourseVersionSerializer
 )
-from rest_framework.filters import SearchFilter  # 新增
+from rest_framework.filters import SearchFilter, OrderingFilter  # 修改：加入 OrderingFilter
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -21,7 +21,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """
     queryset = Course.objects.filter(deleted_at__isnull=True)
     serializer_class = CourseSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]  # 修改：支持检索/排序
     filterset_fields = ['status']
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'created_at']
@@ -61,9 +61,9 @@ class LessonViewSet(viewsets.ModelViewSet):
     """
     queryset = Lesson.objects.filter(deleted_at__isnull=True)
     serializer_class = LessonSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['course', 'status']
-    search_fields = ['name', 'description']
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['course', 'status', 'sort_order', 'name']  # 新增 name 精确过滤
+    search_fields = ['name', 'description', 'course__name']  # 新增课程名参与搜索
     ordering_fields = ['sort_order', 'created_at']
     ordering = ['course', 'sort_order']
     
@@ -88,10 +88,10 @@ class PieceViewSet(viewsets.ModelViewSet):
     """
     queryset = Piece.objects.filter(deleted_at__isnull=True)
     serializer_class = PieceSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]  # 修改：加入 SearchFilter
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]  # 修改：加入 OrderingFilter
     filterset_fields = ['course', 'lesson', 'status', 'attribute', 'is_required']
-    search_fields = ['name', 'description']
-    ordering_fields = ['name', 'created_at']
+    search_fields = ['name', 'description', 'lesson__name', 'course__name']
+    ordering_fields = ['lesson__sort_order', 'name', 'created_at', 'course', 'lesson']
     ordering = ['course', 'lesson__sort_order', 'name']
 
 
@@ -102,7 +102,7 @@ class CourseVersionViewSet(viewsets.ModelViewSet):
     """
     queryset = CourseVersion.objects.filter(deleted_at__isnull=True)
     serializer_class = CourseVersionSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]  # 修改：支持检索/排序
     filterset_fields = ['course', 'status']
     search_fields = ['version_label']
     ordering_fields = ['version_label', 'released_at', 'created_at']

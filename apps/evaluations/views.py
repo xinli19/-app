@@ -18,6 +18,7 @@ from django.db.models import Count, Min, Max  # 新增聚合
 
 from .models import EvaluationTask, FeedbackRecord, FeedbackPieceDetail
 from .serializers import EvaluationTaskSerializer, FeedbackRecordSerializer, FeedbackPieceDetailSerializer
+from apps.courses.models import Piece  # 新增：用于校验与创建曲目明细
 
 def resolve_person_id(user):
     """
@@ -121,6 +122,7 @@ class EvaluationTaskViewSet(viewsets.ModelViewSet):
         - 校验内容
         - 创建 FeedbackRecord
         - 更新任务状态为 completed
+        -（扩展）可同时创建 FeedbackPieceDetail（多曲目）
         """
         data = request.data or {}
         content = (data.get('teacher_content') or '').strip()
@@ -144,6 +146,15 @@ class EvaluationTaskViewSet(viewsets.ModelViewSet):
         produce_impression = bool(data.get('produce_impression', False))
         impression_text = (data.get('impression_text') or '').strip() if produce_impression else None
 
+        # 新增：解析 piece_ids（可选，数组或逗号分隔字符串）
+        raw_piece_ids = data.get('piece_ids') or []
+        if isinstance(raw_piece_ids, str):
+            raw_piece_ids = [x.strip() for x in raw_piece_ids.split(',') if x.strip()]
+        try:
+            piece_ids = list({str(x) for x in raw_piece_ids})  # 去重&字符串化
+        except Exception:
+            piece_ids = []
+
         with transaction.atomic():
             fb = FeedbackRecord.objects.create(
                 task_id=task.id,
@@ -155,6 +166,25 @@ class EvaluationTaskViewSet(viewsets.ModelViewSet):
                 created_by_id=teacher_person_id,
                 updated_by_id=teacher_person_id,
             )
+
+            # 新增：创建曲目明细（若提供）
+            if piece_ids:
+                # 校验存在的曲目
+                valid_piece_ids = set(
+                    Piece.objects.filter(deleted_at__isnull=True, id__in=piece_ids)
+                    .values_list('id', flat=True)
+                )
+                # 批量创建 FeedbackPieceDetail（仅 piece 必填）
+                if valid_piece_ids:
+                    FeedbackPieceDetail.objects.bulk_create([
+                        FeedbackPieceDetail(
+                            feedback_id=fb.id,
+                            piece_id=pid,
+                            created_by_id=teacher_person_id,
+                            updated_by_id=teacher_person_id,
+                        )
+                        for pid in valid_piece_ids
+                    ], ignore_conflicts=True)  # 保证幂等，避免 UniqueConstraint 冲突
 
             task.status = 'completed'
             task.updated_by_id = teacher_person_id

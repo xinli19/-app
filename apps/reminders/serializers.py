@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Reminder, ReminderRecipient
 from apps.persons.models import Person
+from apps.evaluations.serializers import FeedbackPieceDetailSerializer
 
 
 class ReminderSerializer(serializers.ModelSerializer):
@@ -10,6 +11,9 @@ class ReminderSerializer(serializers.ModelSerializer):
         required=False,
         write_only=True
     )
+
+    # 只读：若本提醒关联了某条点评，则附带该点评的曲目刻度明细
+    feedback_details = FeedbackPieceDetailSerializer(source='feedback.details', many=True, read_only=True)
 
     class Meta:
         model = Reminder

@@ -9,9 +9,9 @@ app_name = 'courses'
 
 # 创建路由器
 router = DefaultRouter()
-router.register(r'', views.CourseViewSet, basename='course')
-router.register(r'lessons', views.LessonViewSet, basename='lesson')
-router.register(r'pieces', views.PieceViewSet, basename='piece')
+router.register(r'lessons', views.LessonViewSet, basename='lesson')  # 先注册明确前缀
+router.register(r'pieces', views.PieceViewSet, basename='piece')     # 先注册明确前缀
+router.register(r'', views.CourseViewSet, basename='course')         # 最后注册空前缀
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -252,3 +252,59 @@ html, body {
   .navbar { padding: 0 12px; }
   .teacher-board .board-content { padding: 12px; }
 }
+
+/* 曲目刻度选择弹层 */
+.piece-popover {
+  position: absolute;
+  top: 70px; /* 根据实际表单位置微调 */
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 10px;
+  z-index: 1000;
+  display: none; /* 通过脚本切换 */
+}
+
+.piece-popover .pane-title {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.piece-popover .lesson-pane,
+.piece-popover .piece-pane {
+  display: inline-block;
+  vertical-align: top;
+  width: 48%;
+}
+
+.piece-popover .lesson-list,
+.piece-popover .piece-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid #f3f4f6;
+  border-radius: 4px;
+}
+
+.piece-popover .lesson-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+}
+.piece-popover .lesson-item:hover {
+  background: #f9fafb;
+}
+
+.piece-popover .piece-list li {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.piece-popover .muted { color: #9ca3af; padding: 8px 10px; }
+.piece-popover .error { color: #b91c1c; padding: 8px 10px; }

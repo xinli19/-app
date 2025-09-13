@@ -228,7 +228,7 @@ class TeacherApp {
     }
 
     if (tasksList) {
-      // 列表内点击事件：学员锚点、提交点评、切换印象/提醒、发送提醒
+      // 列表内点击事件：学员锚点、提交点评、切换印象/提醒、搜索课次/选择曲目、发送提醒
       tasksList.addEventListener("click", (e) => {
         // 学员昵称（锚点）
         const stuLink = e.target.closest(".stu-link");
@@ -260,6 +260,37 @@ class TeacherApp {
           return;
         }
 
+        // 打开并搜索课次
+        const lessonSearchBtn = e.target.closest(".btn-lesson-search");
+        if (lessonSearchBtn) {
+          const id = lessonSearchBtn.dataset.id;
+          const input = document.querySelector(`.piece-search[data-id="${id}"]`);
+          const q = (input?.value || "").trim();
+          this.searchLessons(id, q);
+          this.searchPieces(id, q);
+          this.showPiecePopover(id);
+          return;
+        }
+
+        // 点击课次项，加载该课次的曲目
+        const lessonItem = e.target.closest(".lesson-item");
+        if (lessonItem) {
+          const taskId = lessonItem.dataset.taskId;
+          const lessonId = lessonItem.dataset.lessonId;
+          this.loadLessonPieces(taskId, lessonId);
+          return;
+        }
+
+        // 点击曲目复选框，同步选择（不关闭弹层）
+        const pieceCheckbox = e.target.closest(".piece-checkbox");
+        if (pieceCheckbox) {
+          const taskId = pieceCheckbox.dataset.taskId;
+          const pieceId = pieceCheckbox.value;
+          const checked = pieceCheckbox.checked;
+          this.togglePieceSelection(taskId, pieceId, checked);
+          return;
+        }
+
         const sendRemBtn = e.target.closest(".btn-send-reminder");
         if (sendRemBtn) {
           const id = sendRemBtn.dataset.id;
@@ -277,6 +308,16 @@ class TeacherApp {
         }
       });
 
+      // 委托处理“全选”
+      tasksList.addEventListener("change", (e) => {
+        const allToggle = e.target.closest(".check-all-pieces");
+        if (allToggle) {
+          const taskId = allToggle.dataset.id;
+          const checked = allToggle.checked;
+          this.toggleAllPiecesInView(taskId, checked);
+        }
+      });
+
       // 点评内容字数统计
       tasksList.addEventListener("input", (e) => {
         if (e.target && e.target.classList?.contains("task-editor")) {
@@ -284,6 +325,17 @@ class TeacherApp {
           const counter = document.getElementById(`task-char-${id}`);
           if (counter) counter.textContent = String(e.target.value.length || 0);
         }
+      });
+
+      // 点击空白处关闭弹层
+      document.addEventListener("click", (e) => {
+        const openPopovers = document.querySelectorAll(".piece-popover[style*='display: block'], .piece-popover[style*='display:block']");
+        openPopovers.forEach(pop => {
+          const area = pop.closest(".piece-select-area");
+          if (!area?.contains(e.target)) {
+            pop.style.display = "none";
+          }
+        });
       });
     }
 
@@ -393,6 +445,41 @@ async loadTasks() {
           t.status !== "completed"
             ? `
         <div class="task-editor-wrap" style="margin-top:8px;">
+          <div class="form-row piece-select-area" style="position:relative;">
+            <label class="form-label">曲目刻度（可多选）</label>
+            <div class="piece-controls" style="display:flex; gap:8px; margin:6px 0;">
+              <input
+                type="text"
+                class="piece-search"
+                data-id="${t.id}"
+                placeholder="输入课次关键词（如 6 或 第六课），点击“搜索”后选择子课（曲目）"
+                style="flex:1; padding:6px 8px;"
+              />
+              <button type="button" class="btn btn-secondary btn-lesson-search" data-id="${t.id}">搜索</button>
+            </div>
+
+            <!-- 可持续打开的选择弹层：左侧课次列表，右侧曲目列表（含全选） -->
+            <div class="piece-popover" data-id="${t.id}" style="display:none;">
+              <div class="lesson-pane">
+                <div class="pane-title">匹配课次</div>
+                <ul class="lesson-list" data-id="${t.id}"></ul>
+              </div>
+              <div class="piece-pane">
+                <div class="pane-title">
+                  子课（曲目）
+                  <label style="margin-left:8px;font-weight:normal;">
+                    <input type="checkbox" class="check-all-pieces" data-id="${t.id}" /> 全选
+                  </label>
+                </div>
+                <ul class="piece-list" data-id="${t.id}"></ul>
+              </div>
+            </div>
+
+            <!-- 最终提交读取的多选框（隐藏显示但保留结构；也可显示给用户回看已选） -->
+            <select multiple class="piece-multi" data-id="${t.id}" size="6" style="width:100%; padding:6px; margin-top:8px;">
+            </select>
+            <small class="text-muted">提示：先输入课次关键词（如“6”或“第六课”）并搜索，再在弹层中选择子课（曲目）；可多选，点击空白处关闭弹层。</small>
+          </div>
           <textarea id="task-editor-${t.id}" class="task-editor" data-id="${t.id}" rows="4" placeholder="请输入教师点评内容（必填）"></textarea>
           <div class="editor-actions" style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <span class="char-counter">已输入 <span id="task-char-${t.id}">0</span> 字</span>
@@ -490,30 +577,43 @@ async loadTasks() {
 
       // 读取教师印象（可选）
       const impWrap = document.getElementById(`imp-wrap-${taskId}`);
-      let body = { teacher_content: content };
+      let produce = false;
+      let impText = "";
       if (impWrap && impWrap.style.display !== "none") {
-        const enable = !!document.getElementById(`imp-enable-${taskId}`)
-          ?.checked;
-        const text = (
-          document.getElementById(`imp-text-${taskId}`)?.value || ""
-        ).trim();
-        if (enable) {
-          body.produce_impression = true;
-          body.impression_text = text || "";
-        }
+        produce = !!document.getElementById(`imp-enable-${taskId}`)?.checked;
+        impText = (document.getElementById(`imp-text-${taskId}`)?.value || "").trim();
       }
 
-      await Utils.request(`/api/v1/tasks/${taskId}/submit/`, {
-        method: "POST",
-        body: JSON.stringify(body),
-      });
+      // 读取多选曲目（可为空）
+      const card = document.querySelector(`.card[data-id="${taskId}"]`) || document;
+      const selectEl =
+        card.querySelector(`.piece-multi[data-id="${taskId}"]`) ||
+        document.querySelector(`.piece-multi[data-id="${taskId}"]`);
+      const pieceIds = selectEl ? Array.from(selectEl.selectedOptions || []).map((o) => o.value) : [];
+
+      const body = {
+        teacher_content: content,
+        produce_impression: produce,
+        impression_text: produce ? (impText || "") : null,
+        piece_ids: pieceIds, // 新增：提交曲目列表（可为空）
+      };
+
+      // 改为 Utils.request，并修正路由为 /api/v1/tasks/:id/submit/
+      const resp = await Utils.request(
+        `/api/v1/tasks/${encodeURIComponent(taskId)}/submit/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
 
       await this.loadTasks();
     } catch (e) {
       const msg = String(e.message || "");
       if (msg.includes("HTTP 501")) {
         alert(
-          "后端暂未实现提交接口（/api/v1/tasks/:id/submit/），功能待对接完成后可使用。"
+          "后端暂未实现提交接口（/api/v1/evaluation-tasks/:id/submit/），功能待对接完成后可使用。"
         );
         return;
       }
@@ -785,6 +885,41 @@ async loadTasks() {
           t.status !== "completed"
             ? `
         <div class="task-editor-wrap" style="margin-top:8px;">
+          <div class="form-row piece-select-area" style="position:relative;">
+            <label class="form-label">曲目刻度（可多选）</label>
+            <div class="piece-controls" style="display:flex; gap:8px; margin:6px 0;">
+              <input
+                type="text"
+                class="piece-search"
+                data-id="${t.id}"
+                placeholder="输入课次关键词（如 6 或 第六课），点击“搜索”后选择子课（曲目）"
+                style="flex:1; padding:6px 8px;"
+              />
+              <button type="button" class="btn btn-secondary btn-lesson-search" data-id="${t.id}">搜索</button>
+            </div>
+
+            <!-- 可持续打开的选择弹层：左侧课次列表，右侧曲目列表（含全选） -->
+            <div class="piece-popover" data-id="${t.id}" style="display:none;">
+              <div class="lesson-pane">
+                <div class="pane-title">匹配课次</div>
+                <ul class="lesson-list" data-id="${t.id}"></ul>
+              </div>
+              <div class="piece-pane">
+                <div class="pane-title">
+                  子课（曲目）
+                  <label style="margin-left:8px;font-weight:normal;">
+                    <input type="checkbox" class="check-all-pieces" data-id="${t.id}" /> 全选
+                  </label>
+                </div>
+                <ul class="piece-list" data-id="${t.id}"></ul>
+              </div>
+            </div>
+
+            <!-- 最终提交读取的多选框（隐藏显示但保留结构；也可显示给用户回看已选） -->
+            <select multiple class="piece-multi" data-id="${t.id}" size="6" style="width:100%; padding:6px; margin-top:8px;">
+            </select>
+            <small class="text-muted">提示：先输入课次关键词（如“6”或“第六课”）并搜索，再在弹层中选择子课（曲目）；可多选，点击空白处关闭弹层。</small>
+          </div>
           <textarea id="task-editor-${t.id}" class="task-editor" data-id="${t.id}" rows="4" placeholder="请输入教师点评内容（必填）"></textarea>
           <div class="editor-actions" style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <span class="char-counter">已输入 <span id="task-char-${t.id}">0</span> 字</span>
@@ -913,6 +1048,12 @@ async loadTasks() {
         const teacherContent = this.escapeHtml(it.content_text || it.teacher_content || "");
         const researcherFeedback = this.escapeHtml(it.researcher_feedback || "");
 
+        // 新增：曲目刻度渲染
+        const details = Array.isArray(it.details) ? it.details : [];
+        const piecesText = details.length
+          ? details.map(d => this.escapeHtml(d.piece_name || d.piece)).join("、")
+          : "";
+
         return `
           <div class="card" style="margin-bottom:10px;">
             <div class="card-header">
@@ -923,6 +1064,7 @@ async loadTasks() {
             </div>
             <div class="card-body">
               <div><strong>教师点评：</strong>${teacherContent || "-"}</div>
+              ${piecesText ? `<div style="margin-top:6px;"><strong>曲目刻度：</strong>${piecesText}</div>` : ""}
               <div style="margin-top:6px;"><strong>教研反馈：</strong>${researcherFeedback || "-"}</div>
             </div>
           </div>
@@ -1205,6 +1347,13 @@ async loadTasks() {
         const urgencyBadge = this.getUrgencyBadge(r.urgency);
         const category = this.getReminderCategoryText(r.category);
         const content = this.escapeHtml(r.content || "");
+
+        // 新增：曲目刻度渲染（源自后端补充的 feedback_details）
+        const fds = Array.isArray(r.feedback_details) ? r.feedback_details : [];
+        const fdText = fds.length
+          ? fds.map(d => this.escapeHtml(d.piece_name || d.piece)).join("、")
+          : "";
+
         return `
         <div class="card reminder-card">
           <div class="card-header">
@@ -1214,7 +1363,10 @@ async loadTasks() {
             </div>
             <div class="right" style="color:#57606a;font-size:12px;">${createdAt || "-"}</div>
           </div>
-          <div class="card-body">${content || "-"}</div>
+          <div class="card-body">
+            ${content || "-"}
+            ${fdText ? `<div style="margin-top:6px;"><strong>曲目刻度：</strong>${fdText}</div>` : ""}
+          </div>
         </div>
       `;
       })
@@ -1425,6 +1577,187 @@ async loadTasks() {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  // 新增：搜索曲目并填充对应任务的多选框
+  async searchPieces(taskId, keyword) {
+    const selectEl = document.querySelector(`.piece-multi[data-id="${taskId}"]`);
+    if (!selectEl) return;
+
+    const selected = new Set(Array.from(selectEl.selectedOptions).map(o => o.value));
+
+    try {
+      const url = keyword
+        ? `/api/courses/pieces/?search=${encodeURIComponent(keyword)}&ordering=lesson__sort_order,name&page_size=100`
+        : `/api/courses/pieces/?ordering=lesson__sort_order,name&page_size=100`;
+
+      // 改为 Utils.get，自动带上 API_BASE_URL
+      const data = await Utils.get(url);
+
+      const items = Array.isArray(data) ? data : (data.results || data.items || []);
+      selectEl.innerHTML = items.map(p => {
+        const id = p.id || p.uuid || p.pk;
+        const name = p.name || '未命名曲目';
+        const selectedAttr = selected.has(String(id)) ? 'selected' : '';
+        return `<option value="${id}" ${selectedAttr}>${this.escapeHtml(name)}</option>`;
+      }).join('');
+
+      // 新增：同步把匹配曲目渲染到右侧“子课（曲目）”面板
+      const ul = document.querySelector(`.piece-list[data-id="${taskId}"]`);
+      if (ul) {
+        ul.innerHTML = items.map(p => {
+          const id = String(p.id || p.uuid || p.pk);
+          const name = p.name || '未命名曲目';
+          const checked = selected.has(id) ? 'checked' : '';
+          return `
+            <li>
+              <label>
+                <input type="checkbox" class="piece-checkbox" data-task-id="${taskId}" value="${id}" ${checked} />
+                ${this.escapeHtml(name)}
+              </label>
+            </li>`;
+        }).join('');
+
+        // 同步“全选”状态
+        const allToggle = document.querySelector(`.check-all-pieces[data-id="${taskId}"]`);
+        if (allToggle) {
+          const allIds = items.map(p => String(p.id || p.uuid || p.pk));
+          const allSelected = allIds.length > 0 && allIds.every(id => selected.has(id));
+          allToggle.checked = allSelected;
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      this.showError?.(err.message || '搜索曲目失败');
+    }
+  }
+
+  showPiecePopover(taskId) {
+    const pop = document.querySelector(`.piece-popover[data-id="${taskId}"]`);
+    if (pop) pop.style.display = "block";
+  }
+
+  async searchLessons(taskId, keyword) {
+    const ul = document.querySelector(`.lesson-list[data-id="${taskId}"]`);
+    if (!ul) return;
+    ul.innerHTML = `<li class="muted">搜索中...</li>`;
+    try {
+      const url = keyword
+        ? `/api/courses/lessons/?search=${encodeURIComponent(keyword)}&ordering=sort_order`
+        : `/api/courses/lessons/?ordering=sort_order`;
+      const data = await Utils.get(url);
+      const items = Array.isArray(data) ? data : (data.results || data.items || []);
+      if (!items.length) {
+        // 不显示“未找到相关课次”，直接清空列表并回落到曲目搜索
+        ul.innerHTML = "";
+        await this.searchPieces(taskId, keyword);
+        return;
+      }
+      ul.innerHTML = items.map(lsn => {
+        const id = lsn.id || lsn.uuid || lsn.pk;
+        const name = lsn.name || '未命名课次';
+        return `<li class="lesson-item" data-task-id="${taskId}" data-lesson-id="${id}" title="点击加载该课次的曲目">${this.escapeHtml(name)}</li>`;
+      }).join('');
+    } catch (err) {
+      console.error(err);
+      ul.innerHTML = `<li class="error">课次搜索失败</li>`;
+    }
+  }
+
+  async loadLessonPieces(taskId, lessonId) {
+    const ul = document.querySelector(`.piece-list[data-id="${taskId}"]`);
+    if (!ul) return;
+    ul.innerHTML = `<li class="muted">加载曲目中...</li>`;
+    try {
+      const data = await Utils.get(`/api/courses/lessons/${encodeURIComponent(lessonId)}/pieces/`);
+      const items = Array.isArray(data) ? data : (data.results || data.items || []);
+      // 读取已选
+      const selectEl = document.querySelector(`.piece-multi[data-id="${taskId}"]`);
+      const selected = new Set(selectEl ? Array.from(selectEl.selectedOptions).map(o => String(o.value)) : []);
+
+      ul.innerHTML = items.map(p => {
+        const id = String(p.id || p.uuid || p.pk);
+        const name = p.name || '未命名曲目';
+        const checked = selected.has(id) ? 'checked' : '';
+        return `
+            <li>
+              <label>
+                <input type="checkbox" class="piece-checkbox" data-task-id="${taskId}" value="${id}" ${checked} />
+                ${this.escapeHtml(name)}
+              </label>
+            </li>`;
+      }).join('');
+
+      // 更新“全选”状态
+      const allToggle = document.querySelector(`.check-all-pieces[data-id="${taskId}"]`);
+      if (allToggle) {
+        const allIds = items.map(p => String(p.id || p.uuid || p.pk));
+        const allSelected = allIds.length > 0 && allIds.every(id => selected.has(id));
+        allToggle.checked = allSelected;
+      }
+
+      // 同步 options（避免提交缺少 options）
+      this.syncPieceOptionsFromView(taskId);
+    } catch (err) {
+      console.error(err);
+      ul.innerHTML = `<li class="error">曲目加载失败</li>`;
+    }
+  }
+
+  togglePieceSelection(taskId, pieceId, checked) {
+    const selectEl = document.querySelector(`.piece-multi[data-id="${taskId}"]`);
+    if (!selectEl) return;
+    // 确保 option 存在
+    let opt = Array.from(selectEl.options).find(o => String(o.value) === String(pieceId));
+    if (!opt) {
+      // 名称未知时，先占位；稍后 syncPieceOptionsFromView 会补全文本
+      opt = new Option(pieceId, pieceId);
+      selectEl.add(opt);
+    }
+    opt.selected = !!checked;
+  }
+
+  toggleAllPiecesInView(taskId, checked) {
+    const ul = document.querySelector(`.piece-list[data-id="${taskId}"]`);
+    if (!ul) return;
+    ul.querySelectorAll('.piece-checkbox').forEach(cb => {
+      cb.checked = checked;
+      this.togglePieceSelection(taskId, cb.value, checked);
+    });
+    // 同步 options 文本
+    this.syncPieceOptionsFromView(taskId);
+  }
+
+  syncPieceOptionsFromView(taskId) {
+    // 将当前 piece-list 中的文本填充到 piece-multi 的 option 文本，保证显示友好
+    const ul = document.querySelector(`.piece-list[data-id="${taskId}"]`);
+    const selectEl = document.querySelector(`.piece-multi[data-id="${taskId}"]`);
+    if (!ul || !selectEl) return;
+    const textById = {};
+    ul.querySelectorAll('.piece-checkbox').forEach(cb => {
+      const li = cb.closest('li');
+      const labelText = li ? li.textContent.trim() : '';
+      textById[String(cb.value)] = labelText.replace(/^\s*[\s\S]*?\)\s*/,'') || labelText; // 简单清洗
+    });
+    // 确保 options 完整且文本更新
+    const knownIds = new Set(Object.keys(textById));
+    knownIds.forEach(id => {
+      let opt = Array.from(selectEl.options).find(o => String(o.value) === id);
+      if (!opt) {
+        opt = new Option(textById[id] || id, id);
+        selectEl.add(opt);
+      } else {
+        opt.text = textById[id] || id;
+      }
+    });
+    // 仅保留当前已选的 options（可选：如果想保留历史可不删除）
+    const selectedIds = new Set(Array.from(selectEl.selectedOptions).map(o => String(o.value)));
+    Array.from(selectEl.options).forEach(o => {
+      if (!selectedIds.has(String(o.value))) {
+        // 保留未选的 options 以便回看（如果要精简可删除）
+        // selectEl.removeChild(o);
+      }
+    });
   }
 }
 

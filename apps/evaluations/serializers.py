@@ -2,10 +2,11 @@ from rest_framework import serializers
 from .models import FeedbackRecord, FeedbackPieceDetail, EvaluationTask
 
 class FeedbackPieceDetailSerializer(serializers.ModelSerializer):
+    piece_name = serializers.ReadOnlyField(source='piece.name')
     class Meta:
         model = FeedbackPieceDetail
         fields = ['id', 'feedback', 'piece', 'course_version', 'lesson_version',
-                  'created_at', 'updated_at', 'created_by', 'updated_by', 'deleted_at']
+                  'created_at', 'updated_at', 'created_by', 'updated_by', 'deleted_at', 'piece_name']
         read_only_fields = ['created_at', 'updated_at', 'deleted_at']
 
 class FeedbackRecordSerializer(serializers.ModelSerializer):
