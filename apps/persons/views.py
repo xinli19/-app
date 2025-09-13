@@ -38,6 +38,11 @@ def login_view(request):
         if not person:
             person = Person.objects.create(name=user.username, email=user_email)
 
+        # 新增：若未绑定，则把该 Person 绑定到当前登录账号
+        if not getattr(person, 'user_id', None):
+            person.user = user
+            person.save(update_fields=['user'])
+
         return Response({
             'token': token.key,
             'user': {

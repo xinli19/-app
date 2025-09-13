@@ -92,12 +92,11 @@ const Auth = {
     // 验证token有效性
     async validateToken() {
         try {
-            // 后端当前未实现该接口，如果 404，我们视为有效，避免阻断前端页面
+            // 后端当前未实现该接口，如果实现了就按返回值判断
             const response = await Utils.get('/auth/validate/');
             return response && (response.valid !== false);
         } catch (error) {
-            console.error('Token验证失败:', error);
-            // 容忍 404 / 网络错误，不阻断前端页面
+            // 静默容忍 404/网络错误，避免控制台红字干扰
             return true;
         }
     },

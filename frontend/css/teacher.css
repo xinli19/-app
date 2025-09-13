@@ -1,0 +1,230 @@
+/* 全局与布局 */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: #222;
+  background: #f5f5f5; /* 与 researcher 页面统一 */
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px; /* 与 researcher 页面统一 */
+}
+
+/* 顶部导航条：与 researcher 的 .header 统一渐变与投影 */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.navbar-brand {
+  font-size: 20px;
+  font-weight: 600;
+}
+.navbar-actions {
+  display: flex;
+  gap: 12px;
+}
+/* 导航内按钮与教研页一致的浅色方案 */
+.navbar .btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.navbar .btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* 按钮：与 researcher 页面统一 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  background: #fff; /* 默认保持白底 */
+  color: #24292f;
+}
+.btn:hover {
+  background: #f6f8fa;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+.btn-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+/* 教师公告板：卡片化、与教研页一致的观感 */
+.teacher-board {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin: 16px auto 0;
+  max-width: 1200px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+.teacher-board .board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafbfc;
+}
+.teacher-board .board-actions {
+  display: flex;
+  gap: 8px;
+}
+.teacher-board .board-content {
+  padding: 20px;
+}
+.teacher-board.collapsed .board-content {
+  display: none;
+}
+
+/* 模块区域 */
+.section {
+  margin-bottom: 16px;
+}
+.section h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+/* 导航菜单（教师模块切换）：与教研页色系统一 */
+.nav-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nav-menu .nav-link {
+  display: inline-flex;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: #666; /* 与 researcher 初始色统一 */
+  text-decoration: none;
+  background: #fff;
+  transition: all 0.15s ease-in-out;
+}
+.nav-menu .nav-link:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+.nav-menu .nav-item.active .nav-link {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-color: #1976d2;
+}
+
+/* 工具栏（搜索/筛选区域） */
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.toolbar input,
+.toolbar select {
+  padding: 8px 12px; /* 与 researcher 统一 */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 14px;
+}
+.muted {
+  color: #8c959f;
+  font-size: 12px;
+}
+
+/* 列表与项：卡片阴影，与 researcher 的卡片观感一致 */
+.list-row {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+.list-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.list-meta {
+  font-size: 12px;
+  color: #57606a;
+}
+.list-meta span + span {
+  margin-left: 10px;
+}
+
+/* 分页：与 researcher 的居中布局一致 */
+.board-pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* 徽章（紧急程度） */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 999px;
+  color: #fff;
+}
+.badge-danger { background: #d9534f; }
+.badge-warning { background: #f0ad4e; }
+.badge-info { background: #5bc0de; }
+.badge-secondary { background: #6c757d; }
+
+/* 小屏自适应 */
+@media (max-width: 768px) {
+  .navbar { padding: 0 12px; }
+  .teacher-board .board-content { padding: 12px; }
+}

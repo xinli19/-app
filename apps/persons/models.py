@@ -4,6 +4,7 @@
 from django.db import models
 from apps.core.models import BaseModel
 from apps.core.enums import EnableStatus
+from django.conf import settings  # 新增
 
 class Person(BaseModel):
     """
@@ -23,6 +24,15 @@ class Person(BaseModel):
     )
     email = models.CharField(max_length=200, null=True, blank=True, verbose_name='邮箱')
     phone = models.CharField(max_length=50, null=True, blank=True, verbose_name='电话')
+    # 显式绑定 Django 用户账号（可为空，逐步绑定不影响现有数据）
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='person_profile',
+        verbose_name='关联账号'
+    )
 
     class Meta:
         db_table = 'persons_person'

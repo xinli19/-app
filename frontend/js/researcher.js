@@ -350,6 +350,18 @@ class ResearcherApp {
         }
         break;
     }
+    this.switchTab(targetId);
+    // 新增：切换时拉取对应数据
+    switch (sectionKey) {
+      case "reminders":
+        this.loadInboxReminders();
+        break;
+      case "tasks":
+        this.loadTasks();
+        break;
+      default:
+        break;
+    }
   }
   async loadTasks() {
     const list = document.getElementById("tasksList");
@@ -375,57 +387,92 @@ class ResearcherApp {
       if (loading) loading.style.display = "none";
     }
   }
-  // 公告
-  renderTasksList() {
-    const container = document.getElementById("tasksList");
-    if (!this.tasks || this.tasks.length === 0) {
-      container.innerHTML = `
+    // ... existing code ...
+    renderTasksList() {
+      const container = document.getElementById("tasksList");
+      if (!container) return;
+      if (!this.tasks || this.tasks.length === 0) {
+        container.innerHTML = `
           <div class="empty-state">
             <h3>暂无任务</h3>
-            <p>点击右上角“新建任务”或“创建任务批次”进行分配</p>
+            <p>切换状态筛选或稍后刷新重试</p>
           </div>`;
-      return;
-    }
-
-    const html = this.tasks
-      .map((t) => {
-        const statusBadge =
-          t.status === "completed"
-            ? '<span class="badge badge-success">已完成</span>'
-            : '<span class="badge badge-warning">未完成</span>';
-        const createdAt = t.created_at ? this.formatDateTime(t.created_at) : "";
-        const updatedAt = t.updated_at ? this.formatDateTime(t.updated_at) : "";
-        const batchTag = t.batch_id
-          ? `<span class="tag">批次: ${this.escapeHtml(t.batch_id)}</span>`
-          : "";
-
-        return `
-            <div class="evaluation-item" data-id="${t.id}">
+        return;
+      }
+      container.innerHTML = this.tasks
+        .map((t) => {
+          const statusBadge =
+            t.status === "completed"
+              ? '<span class="badge badge-success">已完成</span>'
+              : '<span class="badge badge-warning">未完成</span>';
+          const createdAt = t.created_at ? this.formatDateTime(t.created_at) : "";
+          const updatedAt = t.updated_at ? this.formatDateTime(t.updated_at) : "";
+          const studentName = this.escapeHtml(t.student_nickname || t.student || "");
+          const assigneeName = this.escapeHtml(t.assignee_name || t.assignee || "");
+          const note = t.note ? this.escapeHtml(t.note) : "<em>无备注</em>";
+  
+          const editor = t.status !== "completed" ? `
+            <div class="task-editor-wrap" style="margin-top:8px;">
+              <textarea id="task-editor-${t.id}" class="task-editor" data-id="${t.id}" rows="4" placeholder="请输入教师点评内容（必填）"></textarea>
+              <div class="editor-actions" style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span class="char-counter">已输入 <span id="task-char-${t.id}">0</span> 字</span>
+                <button class="btn btn-success btn-submit-feedback" data-id="${t.id}">提交点评</button>
+                <button class="btn btn-secondary btn-toggle-impression" data-id="${t.id}">填写教师印象</button>
+                <button class="btn btn-info btn-toggle-reminder" data-id="${t.id}">推送提醒</button>
+              </div>
+            </div>
+            <div id="imp-wrap-${t.id}" class="impression-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:4px;">
+                  <input type="checkbox" id="imp-enable-${t.id}" />
+                  产出教师印象
+                </label>
+                <input type="text" id="imp-text-${t.id}" placeholder="请输入教师印象内容" style="flex:1;min-width:220px;padding:6px;"/>
+              </div>
+              <div class="hint" style="color:#888;margin-top:6px;">不勾选则不产出教师印象；勾选后建议填写简短的印象摘要。</div>
+            </div>
+            <div id="rem-wrap-${t.id}" class="reminder-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                <select id="rem-urgency-${t.id}" style="min-width:120px;padding:6px;">
+                  <option value="normal">一般</option>
+                  <option value="medium">中</option>
+                  <option value="urgent">高</option>
+                </select>
+                <span style="color:#888;">紧急度</span>
+              </div>
+              <textarea id="rem-content-${t.id}" rows="3" placeholder="请输入提醒内容（例如：该生最近练习不规律，请关注）" style="width:100%;padding:6px;"></textarea>
+              <div style="margin-top:6px;">
+                <button class="btn btn-primary btn-send-reminder" data-id="${t.id}">发送提醒到我的收件箱</button>
+                <span style="color:#888;margin-left:8px;">（接收人默认是当前登录教师，可在后续版本支持选择对象）</span>
+              </div>
+            </div>
+          ` : `
+            <div style="margin-top:8px;color:#888;">该任务已完成，无法再次提交。</div>
+          `;
+  
+          return `
+            <div class="evaluation-item">
               <div class="evaluation-meta">
                 <div>
-                  <strong>学员：</strong>${t.student_nickname || t.student}
-                  &nbsp;&nbsp;<strong>负责人：</strong>${
-                    t.assignee_name || t.assignee
-                  }
+                  <strong>学员：</strong>${studentName}
+                  &nbsp;&nbsp;<strong>负责人：</strong>${assigneeName}
                   &nbsp;&nbsp;<strong>状态：</strong>${statusBadge}
-                  &nbsp;&nbsp;${batchTag}
                 </div>
                 <div class="secondary">
-                  <span>来源：${t.source === "teacher" ? "教师" : "教研"}</span>
-                  &nbsp;&nbsp;<span>创建：${createdAt}</span>
+                  <span>创建：${createdAt}</span>
                   &nbsp;&nbsp;<span>更新：${updatedAt}</span>
                 </div>
               </div>
               <div class="evaluation-content">
-                ${t.note ? this.escapeHtml(t.note) : "<em>无备注</em>"}
+                ${note}
+                ${editor}
               </div>
             </div>
           `;
-      })
-      .join("");
-
-    container.innerHTML = html;
-  }
+        })
+        .join("");
+    }
+    // ... existing code ...
   async openBatchModal() {
     // 确保教师选项已加载
     if (!this.taskFiltersLoaded) {

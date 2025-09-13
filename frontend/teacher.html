@@ -4,18 +4,11 @@
   <meta charset="UTF-8" />
   <title>教师工作台</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="css/researcher.css" rel="stylesheet" />
-  <style>
-    /* 现有样式保持 */
-    /* 选项卡的简单样式（尽量轻量） */
-    .tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .tab-btn.active { background: #428bca; color: #fff; border-color: #428bca; }
-    .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-    .toolbar input, .toolbar select { padding: 6px 8px; border: 1px solid #d5d5d5; border-radius: 4px; }
-    .muted { color: #888; font-size: 12px; }
-  </style>
+  <link href="css/teacher.css" rel="stylesheet" />
+  <!-- 已移除页面内联样式 -->
 </head>
 <body>
+  <!-- 顶部导航不变 -->
   <header class="navbar">
     <div class="navbar-brand">教师工作台</div>
     <div class="navbar-actions">
@@ -27,7 +20,7 @@
     <div class="board-header">
       <div>
         <strong>教师公告栏</strong>
-        <span style="margin-left: 8px; color: #888;">公告与收到的提醒（按时间排序）</span>
+        <span class="muted" style="margin-left: 8px;">公告与收到的提醒（按时间排序）</span>
       </div>
       <div class="board-actions">
         <button class="btn btn-secondary" id="toggleBoardBtn">收起</button>
@@ -62,15 +55,29 @@
     </div>
   </section>
 
-  <main class="container" style="padding: 16px;">
-    <!-- 新增：选项卡导航 -->
-    <div class="tabs" id="teacherTabs">
-      <button class="btn btn-secondary tab-btn active" data-tab="remindersTab">教师提醒</button>
-      <button class="btn btn-secondary tab-btn" data-tab="tasksTab">点评任务</button>
-      <button class="btn btn-secondary tab-btn" data-tab="feedbacksTab">查看点评</button>
-    </div>
-
-    <!-- 教师提醒模块 -->
+  <main class="container">
+    <!-- 新增：导航栏（参考教研页面的结构） -->
+    <nav class="nav-menu" id="teacherNav">
+      <ul>
+        <li class="nav-item active">
+          <a href="#reminders" class="nav-link" data-section="reminders">
+            <span class="nav-text">教师提醒</span>
+          </a>
+        </li>
+        <!-- 新增：点评任务入口（合并为同一组导航） -->
+        <li class="nav-item">
+          <a href="#tasks" class="nav-link" data-section="tasks">
+            <span class="nav-text">点评任务</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#feedbacks" class="nav-link" data-section="feedbacks">
+            <span class="nav-text">查看点评</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <!-- 下面保留三个模块的容器（id 不变），默认显示教师提醒 -->
     <section id="remindersTab" class="section" style="display: block;">
       <div class="toolbar">
         <input type="text" id="remInbQ" placeholder="搜索提醒内容/学员昵称/小鹅通ID" />
@@ -92,29 +99,26 @@
       </div>
     </section>
 
-    <!-- 点评任务模块 -->
-    <section id="tasksTab" class="section" style="display: none;">
+      <!-- 补充/确保存在 点评任务 模块容器，id 必须是 tasksTab -->
+    <section id="tasksTab" class="tab" style="display: none;">
       <div class="toolbar">
-        <label>状态：
-          <select id="taskStatusFilter">
-            <option value="">全部</option>
-            <option value="pending">未完成</option>
-            <option value="completed">已完成</option>
-          </select>
-        </label>
-        <button class="btn btn-secondary" id="tasksRefresh">刷新</button>
+        <select id="taskStatusFilter">
+          <option value="pending">未完成</option>
+          <option value="completed">已完成</option>
+          <option value="">全部</option>
+        </select>
+        <button id="tasksRefresh">刷新</button>
       </div>
-      <div id="tasksList">
-        <div class="list-row">加载中...</div>
-      </div>
-      <div class="board-pagination">
-        <button class="btn btn-secondary" id="tasksPrev">上一页</button>
-        <span id="tasksPageInfo">第 1 页</span>
-        <button class="btn btn-secondary" id="tasksNext">下一页</button>
+
+      <div id="tasksList"></div>
+
+      <div class="pagination">
+        <button id="tasksPrev">上一页</button>
+        <span id="tasksPage"></span>
+        <button id="tasksNext">下一页</button>
       </div>
     </section>
 
-    <!-- 查看点评模块 -->
     <section id="feedbacksTab" class="section" style="display: none;">
       <div class="toolbar">
         <input type="text" id="fbQ" placeholder="搜索学员/教师/点评正文" />
