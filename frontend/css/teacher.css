@@ -222,6 +222,30 @@ html, body {
 .badge-warning { background: #f0ad4e; }
 .badge-info { background: #5bc0de; }
 .badge-secondary { background: #6c757d; }
+/* 新增：完成状态的绿色徽章，供点评任务使用 */
+.badge-success { background: #28a745; }
+
+/* 通用卡片组件：统一列表样式 */
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafbfc;
+}
+.card-body {
+  padding: 12px;
+}
 
 /* 小屏自适应 */
 @media (max-width: 768px) {

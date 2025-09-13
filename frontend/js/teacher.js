@@ -359,6 +359,7 @@ async loadTasks() {
   renderTasksList() {
     const container = document.getElementById("tasksList");
     if (!container) return;
+
     if (!this.tasks || this.tasks.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
@@ -367,86 +368,88 @@ async loadTasks() {
         </div>`;
       return;
     }
+
     container.innerHTML = this.tasks
       .map((t) => {
         const statusBadge =
           t.status === "completed"
             ? '<span class="badge badge-success">已完成</span>'
             : '<span class="badge badge-warning">未完成</span>';
-        const createdAt = t.created_at ? this.formatDateTime(t.created_at) : "";
-        const updatedAt = t.updated_at ? this.formatDateTime(t.updated_at) : "";
-        const studentName = this.escapeHtml(
-          t.student_nickname || t.student || ""
-        );
-        const assigneeName = this.escapeHtml(
-          t.assignee_name || t.assignee || ""
-        );
+
+        const createdAt = t.created_at ? this.formatDateTime(t.created_at) : "-";
+        const updatedAt = t.updated_at ? this.formatDateTime(t.updated_at) : "-";
+
+        const rawStudentName = t.student_nickname || t.student || "";
+        const studentId =
+          typeof t.student === "object" && t.student ? (t.student.id ?? null) : t.student;
+        const studentNameHtml = studentId
+          ? `<a href="#" class="stu-link" data-stu-id="${studentId}">${this.escapeHtml(rawStudentName)}</a>`
+          : this.escapeHtml(rawStudentName);
+
+        const assigneeName = this.escapeHtml(t.assignee_name || t.assignee || "");
         const note = t.note ? this.escapeHtml(t.note) : "<em>无备注</em>";
 
-        // 行内：教师点评输入框（始终显示）
         const editor =
           t.status !== "completed"
             ? `
-      <div class="task-editor-wrap" style="margin-top:8px;">
-        <textarea id="task-editor-${t.id}" class="task-editor" data-id="${t.id}" rows="4" placeholder="请输入教师点评内容（必填）"></textarea>
-        <div class="editor-actions" style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="char-counter">已输入 <span id="task-char-${t.id}">0</span> 字</span>
-          <button class="btn btn-success btn-submit-feedback" data-id="${t.id}">提交点评</button>
-          <button class="btn btn-secondary btn-toggle-impression" data-id="${t.id}">填写教师印象</button>
-          <button class="btn btn-info btn-toggle-reminder" data-id="${t.id}">推送提醒</button>
-        </div>
-      </div>
-      <!-- 教师印象编辑区（默认隐藏） -->
-      <div id="imp-wrap-${t.id}" class="impression-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
-        <!-- ... existing code ... -->
-      </div>
-      <!-- 推送提醒编辑区（默认隐藏） -->
-      <div id="rem-wrap-${t.id}" class="reminder-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-          <label>推送给：</label>
-          <select id="rem-role-${t.id}" class="rem-role" data-id="${t.id}" style="min-width:120px;padding:6px;">
-            <option value="researcher">教研</option>
-            <option value="operator">运营</option>
-          </select>
-          <select id="rem-recipients-${t.id}" class="rem-recipients" data-id="${t.id}" multiple size="4" style="min-width:220px;padding:6px;"></select>
-          <span style="color:#888;">（按角色筛选多选接收人，至少选择 1 位）</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-          <select id="rem-urgency-${t.id}" style="min-width:120px;padding:6px;">
-            <option value="normal">一般</option>
-            <option value="medium">中</option>
-            <option value="urgent">高</option>
-          </select>
-          <span style="color:#888;">紧急度</span>
-        </div>
-        <textarea id="rem-content-${t.id}" rows="3" placeholder="请输入提醒内容（例如：该生最近练习不规律，请关注）" style="width:100%;padding:6px;"></textarea>
-        <div style="margin-top:6px;">
-          <button class="btn btn-primary btn-send-reminder" data-id="${t.id}">发送提醒</button>
-        </div>
-      </div>
-    `
-            : `
-      <div style="margin-top:8px;color:#888;">该任务已完成，无法再次提交。</div>
-    `;
-        return `
-          <div class="evaluation-item">
-            <div class="evaluation-meta">
-              <div>
-                <strong>学员：</strong>${studentName}
-                &nbsp;&nbsp;<strong>负责人：</strong>${assigneeName}
-                &nbsp;&nbsp;<strong>状态：</strong>${statusBadge}
-              </div>
-              <div class="secondary">
-                <span>创建：${createdAt}</span>
-                &nbsp;&nbsp;<span>更新：${updatedAt}</span>
-              </div>
-            </div>
-            <div class="evaluation-content">
-              ${note}
-              ${editor}
-            </div>
+        <div class="task-editor-wrap" style="margin-top:8px;">
+          <textarea id="task-editor-${t.id}" class="task-editor" data-id="${t.id}" rows="4" placeholder="请输入教师点评内容（必填）"></textarea>
+          <div class="editor-actions" style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="char-counter">已输入 <span id="task-char-${t.id}">0</span> 字</span>
+            <button class="btn btn-success btn-submit-feedback" data-id="${t.id}">提交点评</button>
+            <button class="btn btn-secondary btn-toggle-impression" data-id="${t.id}">填写教师印象</button>
+            <button class="btn btn-info btn-toggle-reminder" data-id="${t.id}">推送提醒</button>
           </div>
-        `;
+        </div>
+        <div id="imp-wrap-${t.id}" class="impression-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:4px;">
+              <input type="checkbox" id="imp-enable-${t.id}" />
+              产出教师印象
+            </label>
+            <input type="text" id="imp-text-${t.id}" placeholder="请输入教师印象内容" style="flex:1;min-width:220px;padding:6px;"/>
+          </div>
+          <div class="hint" style="color:#888;margin-top:6px;">不勾选则不产出教师印象；勾选后建议填写简短的印象摘要。</div>
+        </div>
+        <div id="rem-wrap-${t.id}" class="reminder-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+            <select id="rem-urgency-${t.id}" style="min-width:120px;padding:6px;">
+              <option value="normal">一般</option>
+              <option value="medium">中</option>
+              <option value="urgent">高</option>
+            </select>
+            <span style="color:#888;">紧急度</span>
+          </div>
+          <textarea id="rem-content-${t.id}" rows="3" placeholder="请输入提醒内容（例如：该生最近练习不规律，请关注）" style="width:100%;padding:6px;"></textarea>
+          <div style="margin-top:6px;">
+            <button class="btn btn-primary btn-send-reminder" data-id="${t.id}">发送提醒到我的收件箱</button>
+            <span style="color:#888;margin-left:8px;">（接收人默认是当前登录教师，可在后续版本支持选择对象）</span>
+          </div>
+        </div>
+      `
+            : `
+        <div class="task-editor-wrap" style="margin-top:8px;color:#888;">
+          该任务已完成，如需修改请联系教研或管理员
+        </div>
+      `;
+
+        return `
+        <div class="card task-card">
+          <div class="card-header">
+            <div class="left" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <span><strong>学员：</strong>${studentNameHtml}</span>
+              <span><strong>负责人：</strong>${assigneeName || "-"}</span>
+              <span><strong>创建：</strong>${createdAt}</span>
+              <span><strong>更新：</strong>${updatedAt}</span>
+            </div>
+            <div class="right">${statusBadge}</div>
+          </div>
+          <div class="card-body">
+            <div class="task-note" style="color:#666;margin-bottom:6px;"><strong>备注：</strong>${note}</div>
+            ${editor}
+          </div>
+        </div>
+      `;
       })
       .join("");
   }
@@ -644,36 +647,34 @@ async loadTasks() {
         const urgency = this.getUrgencyText(r.urgency);
         const urgencyBadge = this.getUrgencyBadge(r.urgency);
         const category = this.getReminderCategoryText(r.category);
-        const senderName = this.escapeHtml(
-          r.sender_name || r.sender || "未知发送人"
-        );
-        const studentName = this.escapeHtml(
-          r.student_name || r.student_nickname || r.student || ""
-        );
+        const senderName = this.escapeHtml(r.sender_name || r.sender || "未知发送人");
+        const studentName = this.escapeHtml(r.student_name || r.student_nickname || r.student || "");
         const courseName = this.escapeHtml(r.course_name || r.course || "");
         const checked = this.inbSelectedIds.has(String(id)) ? "checked" : "";
         return `
-          <div class="list-row">
-            <div class="list-title" style="display:flex;align-items:center;gap:8px;">
+        <div class="card reminder-card">
+          <div class="card-header">
+            <div class="left" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <input type="checkbox" class="inb-check" data-id="${id}" ${checked} />
-              <span class="badge ${urgencyBadge}" style="margin-right:6px;">${urgency}</span>
-              ${category || "提醒"}
+              <span class="badge ${urgencyBadge}">${urgency}</span>
+              <span>${category || "提醒"}</span>
             </div>
+            <div class="right" style="color:#57606a;font-size:12px;">${createdAt || "-"}</div>
+          </div>
+          <div class="card-body">
             <div class="list-meta">
-              <span>创建时间：${createdAt || "-"}</span>
               <span>发送人：${senderName}</span>
               ${studentName ? `<span>学员：${studentName}</span>` : ""}
               ${courseName ? `<span>课程：${courseName}</span>` : ""}
             </div>
             ${
               r.content
-                ? `<div style="margin-top:6px;color:#333;">${this.escapeHtml(
-                    r.content
-                  )}</div>`
+                ? `<div style="margin-top:6px;color:#333;">${this.escapeHtml(r.content)}</div>`
                 : ""
             }
           </div>
-        `;
+        </div>
+      `;
       })
       .join("");
   }
@@ -750,6 +751,7 @@ async loadTasks() {
   renderTasksList() {
     const container = document.getElementById("tasksList");
     if (!container) return;
+
     if (!this.tasks || this.tasks.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
@@ -758,91 +760,88 @@ async loadTasks() {
         </div>`;
       return;
     }
+
     container.innerHTML = this.tasks
       .map((t) => {
         const statusBadge =
           t.status === "completed"
             ? '<span class="badge badge-success">已完成</span>'
             : '<span class="badge badge-warning">未完成</span>';
-        const createdAt = t.created_at ? this.formatDateTime(t.created_at) : "";
-        const updatedAt = t.updated_at ? this.formatDateTime(t.updated_at) : "";
-        const rawStudentName = t.student_nickname || t.student || "";
-        const assigneeName = this.escapeHtml(
-          t.assignee_name || t.assignee || ""
-        );
-        const note = t.note ? this.escapeHtml(t.note) : "<em>无备注</em>";
 
-        // 学员昵称：可点击打开学员详情
+        const createdAt = t.created_at ? this.formatDateTime(t.created_at) : "-";
+        const updatedAt = t.updated_at ? this.formatDateTime(t.updated_at) : "-";
+
+        const rawStudentName = t.student_nickname || t.student || "";
         const studentId =
           typeof t.student === "object" && t.student ? (t.student.id ?? null) : t.student;
         const studentNameHtml = studentId
           ? `<a href="#" class="stu-link" data-stu-id="${studentId}">${this.escapeHtml(rawStudentName)}</a>`
           : this.escapeHtml(rawStudentName);
 
-        // 行内：教师点评输入框（始终显示）
+        const assigneeName = this.escapeHtml(t.assignee_name || t.assignee || "");
+        const note = t.note ? this.escapeHtml(t.note) : "<em>无备注</em>";
+
         const editor =
           t.status !== "completed"
             ? `
-          <div class="task-editor-wrap" style="margin-top:8px;">
-            <textarea id="task-editor-${t.id}" class="task-editor" data-id="${t.id}" rows="4" placeholder="请输入教师点评内容（必填）"></textarea>
-            <div class="editor-actions" style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <span class="char-counter">已输入 <span id="task-char-${t.id}">0</span> 字</span>
-              <button class="btn btn-success btn-submit-feedback" data-id="${t.id}">提交点评</button>
-              <button class="btn btn-secondary btn-toggle-impression" data-id="${t.id}">填写教师印象</button>
-              <button class="btn btn-info btn-toggle-reminder" data-id="${t.id}">推送提醒</button>
-            </div>
+        <div class="task-editor-wrap" style="margin-top:8px;">
+          <textarea id="task-editor-${t.id}" class="task-editor" data-id="${t.id}" rows="4" placeholder="请输入教师点评内容（必填）"></textarea>
+          <div class="editor-actions" style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="char-counter">已输入 <span id="task-char-${t.id}">0</span> 字</span>
+            <button class="btn btn-success btn-submit-feedback" data-id="${t.id}">提交点评</button>
+            <button class="btn btn-secondary btn-toggle-impression" data-id="${t.id}">填写教师印象</button>
+            <button class="btn btn-info btn-toggle-reminder" data-id="${t.id}">推送提醒</button>
           </div>
-          <!-- 教师印象编辑区（默认隐藏） -->
-          <div id="imp-wrap-${t.id}" class="impression-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <label style="display:flex;align-items:center;gap:4px;">
-                <input type="checkbox" id="imp-enable-${t.id}" />
-                产出教师印象
-              </label>
-              <input type="text" id="imp-text-${t.id}" placeholder="请输入教师印象内容" style="flex:1;min-width:220px;padding:6px;"/>
-            </div>
-            <div class="hint" style="color:#888;margin-top:6px;">不勾选则不产出教师印象；勾选后建议填写简短的印象摘要。</div>
+        </div>
+        <div id="imp-wrap-${t.id}" class="impression-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:4px;">
+              <input type="checkbox" id="imp-enable-${t.id}" />
+              产出教师印象
+            </label>
+            <input type="text" id="imp-text-${t.id}" placeholder="请输入教师印象内容" style="flex:1;min-width:220px;padding:6px;"/>
           </div>
-          <!-- 推送提醒编辑区（默认隐藏） -->
-          <div id="rem-wrap-${t.id}" class="reminder-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-              <select id="rem-urgency-${t.id}" style="min-width:120px;padding:6px;">
-                <option value="normal">一般</option>
-                <option value="medium">中</option>
-                <option value="urgent">高</option>
-              </select>
-              <span style="color:#888;">紧急度</span>
-            </div>
-            <textarea id="rem-content-${t.id}" rows="3" placeholder="请输入提醒内容（例如：该生最近练习不规律，请关注）" style="width:100%;padding:6px;"></textarea>
-            <div style="margin-top:6px;">
-              <button class="btn btn-primary btn-send-reminder" data-id="${t.id}">发送提醒到我的收件箱</button>
-              <span style="color:#888;margin-left:8px;">（接收人默认是当前登录教师，可在后续版本支持选择对象）</span>
-            </div>
+          <div class="hint" style="color:#888;margin-top:6px;">不勾选则不产出教师印象；勾选后建议填写简短的印象摘要。</div>
+        </div>
+        <div id="rem-wrap-${t.id}" class="reminder-wrap" style="display:none;margin-top:8px;padding:8px;border:1px dashed #ccc;border-radius:4px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+            <select id="rem-urgency-${t.id}" style="min-width:120px;padding:6px;">
+              <option value="normal">一般</option>
+              <option value="medium">中</option>
+              <option value="urgent">高</option>
+            </select>
+            <span style="color:#888;">紧急度</span>
           </div>
-        `
+          <textarea id="rem-content-${t.id}" rows="3" placeholder="请输入提醒内容（例如：该生最近练习不规律，请关注）" style="width:100%;padding:6px;"></textarea>
+          <div style="margin-top:6px;">
+            <button class="btn btn-primary btn-send-reminder" data-id="${t.id}">发送提醒到我的收件箱</button>
+            <span style="color:#888;margin-left:8px;">（接收人默认是当前登录教师，可在后续版本支持选择对象）</span>
+          </div>
+        </div>
+      `
             : `
-          <div style="margin-top:8px;color:#888;">该任务已完成，无法再次提交。</div>
-        `;
+        <div class="task-editor-wrap" style="margin-top:8px;color:#888;">
+          该任务已完成，如需修改请联系教研或管理员
+        </div>
+      `;
 
         return `
-          <div class="evaluation-item">
-            <div class="evaluation-meta">
-              <div>
-                <strong>学员：</strong>${studentNameHtml}
-                &nbsp;&nbsp;<strong>负责人：</strong>${assigneeName}
-                &nbsp;&nbsp;<strong>状态：</strong>${statusBadge}
-              </div>
-              <div class="secondary">
-                <span>创建：${createdAt}</span>
-                &nbsp;&nbsp;<span>更新：${updatedAt}</span>
-              </div>
+        <div class="card task-card">
+          <div class="card-header">
+            <div class="left" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <span><strong>学员：</strong>${studentNameHtml}</span>
+              <span><strong>负责人：</strong>${assigneeName || "-"}</span>
+              <span><strong>创建：</strong>${createdAt}</span>
+              <span><strong>更新：</strong>${updatedAt}</span>
             </div>
-            <div class="evaluation-content">
-              ${note}
-              ${editor}
-            </div>
+            <div class="right">${statusBadge}</div>
           </div>
-        `;
+          <div class="card-body">
+            <div class="task-note" style="color:#666;margin-bottom:6px;"><strong>备注：</strong>${note}</div>
+            ${editor}
+          </div>
+        </div>
+      `;
       })
       .join("");
   }
@@ -1178,10 +1177,13 @@ async loadTasks() {
         const title = this.escapeHtml(a.title || `公告 #${a.id}`);
         const createdAt = this.formatDateTime(a.created_at);
         return `
-          <div class="list-row">
-            <div class="list-title">${title}</div>
-            <div class="list-meta">
-              <span>发布时间：${createdAt || "-"}</span>
+          <div class="card">
+            <div class="card-header">
+              <div class="left">${title}</div>
+              <div class="right" style="color:#57606a;font-size:12px;">${createdAt || "-"}</div>
+            </div>
+            <div class="card-body">
+              ${this.escapeHtml(a.content || "")}
             </div>
           </div>
         `;
@@ -1196,41 +1198,25 @@ async loadTasks() {
       wrap.innerHTML = `<div class="list-row">暂无提醒</div>`;
       return;
     }
-
     wrap.innerHTML = this.reminders
       .map((r) => {
         const createdAt = this.formatDateTime(r.created_at);
         const urgency = this.getUrgencyText(r.urgency);
         const urgencyBadge = this.getUrgencyBadge(r.urgency);
         const category = this.getReminderCategoryText(r.category);
-        const senderName = this.escapeHtml(
-          r.sender_name || r.sender || "未知发送人"
-        );
-        const studentName = this.escapeHtml(
-          r.student_name || r.student_nickname || r.student || ""
-        );
-        const courseName = this.escapeHtml(r.course_name || r.course || "");
+        const content = this.escapeHtml(r.content || "");
         return `
-          <div class="list-row">
-            <div class="list-title">
-              <span class="badge ${urgencyBadge}" style="margin-right:6px;">${urgency}</span>
-              ${category || "提醒"}
+        <div class="card reminder-card">
+          <div class="card-header">
+            <div class="left" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="badge ${urgencyBadge}">${urgency}</span>
+              <span>${category || "提醒"}</span>
             </div>
-            <div class="list-meta">
-              <span>创建时间：${createdAt || "-"}</span>
-              <span>发送人：${senderName}</span>
-              ${studentName ? `<span>学员：${studentName}</span>` : ""}
-              ${courseName ? `<span>课程：${courseName}</span>` : ""}
-            </div>
-            ${
-              r.content
-                ? `<div style="margin-top:6px;color:#333;">${this.escapeHtml(
-                    r.content
-                  )}</div>`
-                : ""
-            }
+            <div class="right" style="color:#57606a;font-size:12px;">${createdAt || "-"}</div>
           </div>
-        `;
+          <div class="card-body">${content || "-"}</div>
+        </div>
+      `;
       })
       .join("");
   }

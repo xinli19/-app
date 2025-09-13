@@ -749,3 +749,25 @@ body {
         gap: 10px;
     }
 }
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafbfc;
+}
+.card-body {
+  padding: 12px;
+}
+/* 与教师页保持一致 */
+.badge-success { background: #28a745; }
