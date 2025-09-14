@@ -765,59 +765,34 @@ class ResearcherApp {
 
     if (this.announcements.length === 0) {
       container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>📢 暂无公告</h3>
-                        <p>点击上方"发布新公告"按钮创建第一条公告</p>
-                    </div>
-                `;
+        <div class="empty-state">
+          <h3>📢 暂无公告</h3>
+          <p>点击上方"发布新公告"按钮创建第一条公告</p>
+        </div>
+      `;
       return;
     }
 
-    const html = this.announcements
-      .map(
-        (announcement) => `
-                <div class="announcement-item" data-id="${announcement.id}">
-                    <div class="announcement-header">
-                        <span class="announcement-type ${announcement.type}">
-                            ${this.getAnnouncementTypeText(announcement.type)}
-                        </span>
-                        <div class="announcement-actions">
-                            <button class="btn btn-small btn-secondary" onclick="app.editAnnouncement(${
-                              announcement.id
-                            })">
-                                编辑
-                            </button>
-                            <button class="btn btn-small btn-danger" onclick="app.deleteAnnouncement(${
-                              announcement.id
-                            })">
-                                删除
-                            </button>
-                        </div>
-                    </div>
-                    <div class="announcement-content">
-                        ${announcement.content}
-                    </div>
-                    <div class="announcement-meta">
-                        <div class="announcement-time">
-                            <span>开始时间: ${this.formatDateTime(
-                              announcement.start_at
-                            )}</span>
-                            ${
-                              announcement.end_at
-                                ? `<span>结束时间: ${this.formatDateTime(
-                                    announcement.end_at
-                                  )}</span>`
-                                : "<span>长期有效</span>"
-                            }
-                        </div>
-                        <span>发布时间: ${this.formatDateTime(
-                          announcement.created_at
-                        )}</span>
-                    </div>
-                </div>
-            `
-      )
-      .join("");
+    const html = (this.announcements || [])
+      .map((a) => `
+        <div class="card announcement-card" data-id="${a.id}">
+          <div class="card-header">
+            <span class="badge">${this.getAnnouncementTypeText(a.type)}</span>
+            <div class="announcement-actions" style="display:flex; gap:8px;">
+              <button class="btn btn-small btn-secondary" onclick="app.editAnnouncement(${a.id})">编辑</button>
+              <button class="btn btn-small btn-danger" onclick="app.deleteAnnouncement(${a.id})">删除</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="announcement-content">${a.content || ""}</div>
+            <div class="announcement-meta muted" style="margin-top:8px; display:flex; gap:16px; flex-wrap:wrap;">
+              <span>开始时间: ${this.formatDateTime(a.start_at)}</span>
+              <span>${a.end_at ? ("结束时间: " + this.formatDateTime(a.end_at)) : "长期有效"}</span>
+              <span class="timestamp">发布时间: ${this.formatDateTime(a.created_at)}</span>
+            </div>
+          </div>
+        </div>
+      `).join("");
 
     container.innerHTML = html;
   }
@@ -1282,91 +1257,60 @@ class ResearcherApp {
 
     if (!this.evaluations || this.evaluations.length === 0) {
       container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>📄 暂无数据</h3>
-                        <p>调整筛选条件后再试试</p>
-                    </div>
-                `;
+        <div class="empty-state">
+          <h3>📄 暂无数据</h3>
+          <p>调整筛选条件后再试试</p>
+        </div>
+      `;
       return;
     }
 
-    const html = this.evaluations
-      .map((item) => {
-        const createdAt = this.formatDateTime(item.created_at);
-        const studentName =
-          item.student_nickname ||
-          item.student?.nickname ||
-          item.student ||
-          "-";
-        const teacherName =
-          item.teacher_name || item.teacher?.name || item.teacher || "-";
-        const teacherContent = (
-          item.content_text ||
-          item.teacher_content ||
-          ""
-        ).toString();
-        const researcherFeedback = (item.researcher_feedback || "").toString();
+    const html = this.evaluations.map((item) => {
+      const createdAt = this.formatDateTime(item.created_at);
+      const studentName = item.student_nickname || item.student?.nickname || item.student || "-";
+      const teacherName = item.teacher_name || item.teacher?.name || item.teacher || "-";
+      const teacherContent = (item.content_text || item.teacher_content || "").toString();
+      const researcherFeedback = (item.researcher_feedback || "").toString();
 
-        return `
-                    <div class="evaluation-item" data-id="${item.id}">
-                        <div class="evaluation-row">
-                            <div class="evaluation-col">
-                                <div><strong>创建时间：</strong>${
-                                  createdAt || "-"
-                                }</div>
-                                <div><strong>学员：</strong>${studentName}</div>
-                                <div><strong>教师：</strong>${teacherName}</div>
-                            </div>
-                            <div class="evaluation-col">
-                                <div><strong>教师点评：</strong><span title="${teacherContent.replace(
-                                  /"/g,
-                                  "&quot;"
-                                )}">${teacherContent || "-"}</span></div>
-                                <div><strong>教研反馈：</strong><span title="${researcherFeedback.replace(
-                                  /"/g,
-                                  "&quot;"
-                                )}">${researcherFeedback || "-"}</span></div>
-                            </div>
-                        </div>
-                        <div class="evaluation-actions" style="margin-top:8px; display:flex; gap:8px;">
-                          <button class="btn btn-small btn-secondary" data-action="feedback" data-id="${
-                            item.id
-                          }">填写/编辑教研反馈</button>
-                          <button class="btn btn-small btn-primary" data-action="reminder" data-id="${
-                            item.id
-                          }">创建提醒</button>
-                        </div>
-                    </div>
-                `;
-      })
-      .join("");
+      return `
+        <div class="card evaluation-card" data-id="${item.id}">
+          <div class="card-header" style="justify-content:space-between;">
+            <div>
+              <strong>学员：</strong>${studentName}
+              <span class="muted" style="margin-left:12px;">教师：${teacherName}</span>
+            </div>
+            <div class="muted">创建时间：${createdAt || "-"}</div>
+          </div>
+          <div class="card-body">
+            <div class="evaluation-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+              <div class="evaluation-col">
+                <div><strong>教师点评：</strong><span title="${teacherContent.replace(/"/g, "&quot;")}">${teacherContent || "-"}</span></div>
+              </div>
+              <div class="evaluation-col">
+                <div><strong>教研反馈：</strong><span title="${researcherFeedback.replace(/"/g, "&quot;")}">${researcherFeedback || "-"}</span></div>
+              </div>
+            </div>
+            <div class="evaluation-actions" style="margin-top:12px; display:flex; gap:8px;">
+              <button class="btn btn-small btn-secondary" data-action="feedback" data-id="${item.id}">填写/编辑教研反馈</button>
+              <button class="btn btn-small btn-primary" data-action="reminder" data-id="${item.id}">创建提醒</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
 
     container.innerHTML = html;
-
-    // 调试：渲染时打印当前列表的 id 与类型
-    console.debug(
-      "renderEvaluationsList: evaluations ids",
-      (this.evaluations || []).map((x) => `${x.id}:${typeof x.id}`)
-    );
 
     // 事件绑定：打开反馈/提醒模态框
     container.querySelectorAll('[data-action="feedback"]').forEach((btn) => {
       btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id"); // 保留字符串
-        console.debug("click feedback button:", {
-          recordId: id,
-          type: typeof id,
-        });
+        const id = btn.getAttribute("data-id");
         this.openFeedbackModal(id);
       });
     });
     container.querySelectorAll('[data-action="reminder"]').forEach((btn) => {
       btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id"); // 保留字符串
-        console.debug("click reminder button:", {
-          recordId: id,
-          type: typeof id,
-        });
+        const id = btn.getAttribute("data-id");
         this.openReminderModal(id);
       });
     });
@@ -1813,62 +1757,40 @@ class ResearcherApp {
     const container = document.getElementById("tasksList");
     if (!this.tasks || this.tasks.length === 0) {
       container.innerHTML = `
-          <div class="empty-state">
-            <h3>暂无任务</h3>
-            <p>点击右上角“新建任务”进行分配</p>
-          </div>`;
+        <div class="empty-state">
+          <h3>暂无任务</h3>
+          <p>点击右上角“新建任务”进行分配</p>
+        </div>`;
       return;
     }
 
-    const html = this.tasks
-      .map((t) => {
-        const statusText = t.status === "completed" ? "已完成" : "未完成";
-        const statusBadge =
-          t.status === "completed"
-            ? '<span class="badge badge-success">已完成</span>'
-            : '<span class="badge badge-warning">未完成</span>';
-        const createdAt = t.created_at ? this.formatDateTime(t.created_at) : "";
-        const updatedAt = t.updated_at ? this.formatDateTime(t.updated_at) : "";
+    const html = this.tasks.map((t) => {
+      const statusText = t.status === "completed" ? "已完成" : "未完成";
+      const createdAt = t.created_at ? this.formatDateTime(t.created_at) : "";
+      const updatedAt = t.updated_at ? this.formatDateTime(t.updated_at) : "";
 
-        return `
-            <div class="evaluation-item" data-id="${t.id}">
-              <div class="evaluation-meta">
-                <div>
-                  <strong>学员：</strong>${t.student_nickname || t.student}
-                  &nbsp;&nbsp;<strong>负责人：</strong>${
-                    t.assignee_name || t.assignee
-                  }
-                  &nbsp;&nbsp;<strong>状态：</strong>${statusBadge}
-                </div>
-                <div class="secondary">
-                  <span>来源：${t.source === "teacher" ? "教师" : "教研"}</span>
-                  &nbsp;&nbsp;<span>创建：${createdAt}</span>
-                  &nbsp;&nbsp;<span>更新：${updatedAt}</span>
-                </div>
-              </div>
-              <div class="evaluation-content">
-                ${t.note ? this.escapeHtml(t.note) : "<em>无备注</em>"}
-              </div>
+      return `
+        <div class="card task-card" data-id="${t.id}">
+          <div class="card-header" style="justify-content:space-between;">
+            <div>
+              <strong>学员：</strong>${t.student_nickname || t.student}
+              <span class="muted" style="margin-left:12px;">负责人：${t.assignee_name || t.assignee}</span>
+              <span class="badge" style="margin-left:12px;">${statusText}</span>
             </div>
-          `;
-      })
-      .join("");
+            <div class="muted">
+              <span>来源：${t.source === "teacher" ? "教师" : "教研"}</span>
+              <span style="margin-left:12px;">创建：${createdAt}</span>
+              <span style="margin-left:12px;">更新：${updatedAt}</span>
+            </div>
+          </div>
+          <div class="card-body">
+            ${t.note ? this.escapeHtml(t.note) : "<em class='muted'>无备注</em>"}
+          </div>
+        </div>
+      `;
+    }).join("");
 
     container.innerHTML = html;
-
-    // 事件绑定：打开反馈/提醒模态框
-    container.querySelectorAll('[data-action="feedback"]').forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id"); // 不再 parseInt，保持字符串
-        this.openFeedbackModal(id);
-      });
-    });
-    container.querySelectorAll('[data-action="reminder"]').forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id"); // 不再 parseInt，保持字符串
-        this.openReminderModal(id);
-      });
-    });
   }
 
   renderTasksPagination() {
