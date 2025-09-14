@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>运营工作台</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- 移除 researcher.css，保留独立的 operation 样式 -->
+  <!-- <link rel="stylesheet" href="css/researcher.css" /> -->
+  <link rel="stylesheet" href="css/operator-notion.css">
+  <script>
+    // 后端基础地址（必要：以 file:// 打开页面时用于拼接）
+    window.API_BASE = 'http://127.0.0.1:8000';
+  </script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 顶部导航栏 -->
+    <header class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <button id="sidebarToggleBtn" class="icon-btn" aria-label="折叠侧边栏">☰</button>
+          <h1 class="logo">运营工作台</h1>
+        </div>
+        <div class="user-info">
+          <span class="username" id="username">运营用户</span>
+          <button class="logout-btn" id="logoutBtn">退出登录</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 侧边导航栏 -->
+    <aside class="sidebar">
+      <nav class="nav-menu">
+        <ul>
+          <li class="nav-item active">
+            <a href="#reminders" class="nav-link" data-section="reminders">
+              <span class="nav-icon">⏰</span>
+              <span class="nav-text">提醒事项</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#feedbacks" class="nav-link" data-section="feedbacks">
+              <span class="nav-icon">📝</span>
+              <span class="nav-text">学员点评记录</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#students" class="nav-link" data-section="students">
+              <span class="nav-icon">👩‍🎓</span>
+              <span class="nav-text">学员信息管理</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#visits" class="nav-link" data-section="visits">
+              <span class="nav-icon">📞</span>
+              <span class="nav-text">回访记录</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="content">
+      <!-- 提醒事项模块 -->
+      <section id="reminders-section" class="content-section">
+        <div class="section-header">
+          <h2>提醒事项</h2>
+          <div class="actions">
+            <button class="btn btn-primary" id="newReminderBtn">创建提醒</button>
+            <button class="btn btn-secondary" id="refreshRemindersBtn">刷新</button>
+          </div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="filters-row">
+            <div class="filter-group">
+              <label for="remQ">搜索</label>
+              <input type="text" id="remQ" placeholder="按学员昵称/内容关键词" />
+            </div>
+            <div class="filter-group">
+              <label for="remCategory">类别</label>
+              <select id="remCategory">
+                <option value="">全部</option>
+                <option value="performance_poor">教学效果差</option>
+                <option value="attitude_problem">态度问题</option>
+                <option value="irregular_return">回课不规律</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="remUrgency">紧急度</label>
+              <select id="remUrgency">
+                <option value="">全部</option>
+                <option value="high">高</option>
+                <option value="medium">中</option>
+                <option value="low">低</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="remOrdering">排序</label>
+              <select id="remOrdering">
+                <option value="-created_at" selected>最新优先</option>
+                <option value="created_at">最早优先</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="checkbox-inline">
+                <input type="checkbox" id="remOnlyActive" checked />
+                仅有效
+              </label>
+            </div>
+            <div class="filter-actions">
+              <button class="btn btn-primary" id="applyRemFiltersBtn">应用筛选</button>
+              <button class="btn btn-secondary" id="clearRemFiltersBtn">清空</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="reminders-list" id="opsRemindersList">
+          <div class="loading">加载中...</div>
+        </div>
+
+        <div class="pagination-bar">
+          <button class="btn btn-secondary" id="remPrevBtn">上一页</button>
+          <span id="remPageInfo">第 1 页</span>
+          <button class="btn btn-secondary" id="remNextBtn">下一页</button>
+        </div>
+      </section>
+
+      <!-- 学员点评记录模块 -->
+      <section id="feedbacks-section" class="content-section" style="display:none;">
+        <div class="section-header">
+          <h2>学员点评记录</h2>
+          <div class="actions">
+            <button class="btn btn-secondary" id="refreshFeedbacksBtn">刷新</button>
+            <button class="btn btn-primary" id="exportFeedbacksBtn">导出</button>
+          </div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="filters-row">
+            <div class="filter-group">
+              <label for="fbQ">搜索</label>
+              <input type="text" id="fbQ" placeholder="学员昵称/教师姓名/内容" />
+            </div>
+            <div class="filter-group">
+              <label for="fbOrdering">排序</label>
+              <select id="fbOrdering">
+                <option value="-created_at" selected>最新优先</option>
+                <option value="created_at">最早优先</option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <button class="btn btn-primary" id="applyFbFiltersBtn">应用筛选</button>
+              <button class="btn btn-secondary" id="clearFbFiltersBtn">清空</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="opsFeedbacksList" class="list"></div>
+
+        <div class="pagination-bar">
+          <button class="btn btn-secondary" id="fbPrevBtn">上一页</button>
+          <span id="fbPageInfo">第 1 页</span>
+          <button class="btn btn-secondary" id="fbNextBtn">下一页</button>
+        </div>
+      </section>
+
+      <!-- 学员信息管理模块 -->
+      <section id="students-section" class="content-section" style="display:none;">
+        <div class="section-header">
+          <h2>学员信息管理</h2>
+          <div class="actions">
+            <button class="btn btn-primary" id="newStudentBtn">手动新增学员</button>
+            <button class="btn btn-secondary" id="importStudentsBtn">批量导入</button>
+            <button class="btn" id="exportStudentsBtn">导出</button>
+          </div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="filters-row">
+            <div class="filter-group">
+              <label for="stuQ">搜索</label>
+              <input type="text" id="stuQ" placeholder="学员ID/昵称 关键字" />
+            </div>
+            <div class="filter-actions">
+              <button class="btn btn-primary" id="searchStudentsBtn">搜索</button>
+              <button class="btn btn-secondary" id="clearStudentsBtn">清空</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="studentsList" class="list">
+          <div class="empty-state">
+            <h3>👩‍🎓 学员信息</h3>
+            <p>在此搜索并编辑学员昵称、备注名、标签、运营备注等</p>
+          </div>
+        </div>
+
+        <div class="pagination-bar">
+          <button class="btn btn-secondary" id="stuPrevBtn">上一页</button>
+          <span id="stuPageInfo">第 1 页</span>
+          <button class="btn btn-secondary" id="stuNextBtn">下一页</button>
+        </div>
+      </section>
+
+      <!-- 回访记录模块 -->
+      <section id="visits-section" class="content-section" style="display:none;">
+        <div class="section-header">
+          <h2>回访记录</h2>
+          <div class="actions">
+            <button class="btn btn-primary" id="newVisitBtn">新建回访</button>
+            <button class="btn btn-secondary" id="refreshVisitsBtn">刷新</button>
+          </div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="filters-row">
+            <div class="filter-group">
+              <label for="visitQ">搜索</label>
+              <input type="text" id="visitQ" placeholder="按内容/结果关键词" />
+            </div>
+            <div class="filter-group">
+              <label for="visitStatus">状态</label>
+              <select id="visitStatus">
+                <option value="">全部</option>
+                <option value="open">未完成</option>
+                <option value="closed">已完成</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="visitUrgency">紧急度</label>
+              <select id="visitUrgency">
+                <option value="">全部</option>
+                <option value="high">高</option>
+                <option value="medium">中</option>
+                <option value="low">低</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="visitOrdering">排序</label>
+              <select id="visitOrdering">
+                <option value="-created_at" selected>按创建时间(新→旧)</option>
+                <option value="created_at">按创建时间(旧→新)</option>
+                <option value="-next_follow_up_at">下次回访(近→远)</option>
+                <option value="next_follow_up_at">下次回访(远→近)</option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <button class="btn btn-primary" id="applyVisitFiltersBtn">应用筛选</button>
+              <button class="btn btn-secondary" id="clearVisitFiltersBtn">清空</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="visitRecordsList" class="list">
+          <div class="empty-state">
+            <h3>📞 回访记录</h3>
+            <p>展示并管理运营的回访记录</p>
+          </div>
+        </div>
+
+        <div class="pagination-bar">
+          <button class="btn btn-secondary" id="visitPrevBtn">上一页</button>
+          <span id="visitPageInfo">第 1 页</span>
+          <button class="btn btn-secondary" id="visitNextBtn">下一页</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 业务脚本 -->
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/operator.js"></script>
+</body>
+</html>

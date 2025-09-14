@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime, parse_date
 import datetime
+from rest_framework.exceptions import ValidationError
 
 from .models import FollowUpRecord
 from .serializers import FollowUpRecordSerializer
@@ -72,3 +73,9 @@ class FollowUpRecordViewSet(viewsets.ModelViewSet):
             qs = qs.filter(operator_id=operator_id)
 
         return qs
+
+    def perform_create(self, serializer):
+        me = getattr(self.request.user, 'person_profile', None)
+        if not me:
+            raise ValidationError({'operator': ['当前账号未绑定人员，无法创建回访']})
+        serializer.save(operator=me)

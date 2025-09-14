@@ -12,6 +12,7 @@ from datetime import datetime, time
 from django.core.exceptions import ObjectDoesNotExist  # 新增：避免关联对象不存在导致 500
 from rest_framework.exceptions import ValidationError  # 新增：用于在创建时返回 400
 
+from apps.persons.models import Person
 from .models import Reminder, ReminderRecipient
 from .serializers import ReminderSerializer
 
@@ -26,7 +27,20 @@ class ReminderViewSet(viewsets.ModelViewSet):
     # 新增：安全获取当前登录用户的 person_id，避免 RelatedObjectDoesNotExist
     def _safe_me_person_id(self):
         try:
-            return getattr(self.request.user, 'person_id', None)
+            user = self.request.user
+            pid = getattr(user, 'person_id', None)
+            if pid:
+                return str(pid)
+            # 尝试通过 OneToOne 反向关系获取
+            person_profile = getattr(user, 'person_profile', None)
+            if person_profile:
+                return str(person_profile.id)
+            # 兜底查询
+            try:
+                p = Person.objects.filter(user=user).only('id').first()
+                return str(p.id) if p else None
+            except Exception:
+                return None
         except Exception:
             return None
 
@@ -44,7 +58,11 @@ class ReminderViewSet(viewsets.ModelViewSet):
         if not target_pid and recipient_id:
             target_pid = recipient_id
         if target_pid:
-            qs = qs.filter(recipients__person_id=target_pid, recipients__deleted_at__isnull=True).distinct()
+            # 兼容：既匹配多接收人子表，也匹配单接收人字段（Admin 只填 receiver 的场景）
+            qs = qs.filter(
+                Q(recipients__person_id=target_pid, recipients__deleted_at__isnull=True) |
+                Q(receiver_id=target_pid)
+            ).distinct()
 
         # 仅生效提醒（支持 active/include_only_active 两种参数名）
         active = params.get('active')
