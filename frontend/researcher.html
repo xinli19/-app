@@ -6,6 +6,23 @@
     <title>教研工作台</title>
     <link rel="stylesheet" href="css/researcher.css">
     <link rel="stylesheet" href="css/operator-notion.css">
+    <style>
+      /* 覆盖按钮为深色边框款式，适配白色头部 */
+      .header .logout-btn {
+        background: #ffffff;
+        border: 1px solid var(--border, #e5e7eb);
+        color: var(--text, #111827);
+      }
+      .header .logout-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+      }
+      /* 提升白色头部上用户名可读性（可选） */
+      .header .username {
+        color: var(--text, #111827);
+        opacity: 0.9;
+      }
+    </style>
     <script>
         // 统一后端基础地址（file:// 打开也能正确拼接）
         window.API_BASE = 'http://127.0.0.1:8000';
