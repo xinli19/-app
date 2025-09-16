@@ -1,186 +1,221 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <title>教师工作台</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- 移除 teacher.css，避免覆盖 operator-notion 的侧边栏与导航风格 -->
-  <!-- <link href="css/teacher.css" rel="stylesheet" /> -->
-  <!-- 已移除页面内联样式 -->
-  <!-- 使用统一 Notion 风格 -->
-  <link rel="stylesheet" href="css/operator-notion.css">
-  <style>
-    /* 教师公告栏收起样式：收起时隐藏内容区域 */
-    .teacher-board.collapsed .board-content { display: none; }
-    /* 可选：收起时在头部显示细分隔线，保持层次感 */
-    .teacher-board.collapsed .board-header { border-bottom: 1px solid #e5e7eb; }
-  </style>
-  <script>
-    // 统一后端基础地址
-    window.API_BASE = 'http://127.0.0.1:8000';
-  </script>
-</head>
-<body>
-  <div class="app-container">
-    <header class="header">
-      <div class="header-content">
-        <div class="header-left">
-          <button id="sidebarToggleBtn" class="icon-btn" aria-label="折叠侧边栏">☰</button>
-          <h1 class="logo">教师工作台</h1>
-        </div>
-        <div class="user-info">
-          <span class="username" id="username"></span>
-          <button class="logout-btn btn" id="logoutBtn">退出登录</button>
-        </div>
-      </div>
-    </header>
-
-    <aside class="sidebar">
-      <nav class="nav-menu" id="teacherNav">
-        <ul>
-          <li class="nav-item active">
-            <a href="#reminders" class="nav-link" data-section="reminders">
-              <span class="nav-icon">⏰</span>
-              <span class="nav-text">教师提醒</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#tasks" class="nav-link" data-section="tasks">
-              <span class="nav-icon">✅</span>
-              <span class="nav-text">点评任务</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#feedbacks" class="nav-link" data-section="feedbacks">
-              <span class="nav-icon">📝</span>
-              <span class="nav-text">查看点评</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </aside>
-
-    <main class="content">
-      <section id="teacherBoard" class="teacher-board">
-        <div class="board-header">
-          <div>
-            <strong>教师公告栏</strong>
-            <span class="muted" style="margin-left: 8px;">公告与收到的提醒（按时间排序）</span>
+  <head>
+    <meta charset="UTF-8" />
+    <title>教师工作台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 移除 teacher.css，避免覆盖 operator-notion 的侧边栏与导航风格 -->
+    <!-- <link href="css/teacher.css" rel="stylesheet" /> -->
+    <!-- 已移除页面内联样式 -->
+    <!-- 使用统一 Notion 风格 -->
+    <link rel="stylesheet" href="css/operator-notion.css" />
+    <style>
+      /* 教师公告栏收起样式：收起时隐藏内容区域 */
+      .teacher-board.collapsed .board-content {
+        display: none;
+      }
+      /* 可选：收起时在头部显示细分隔线，保持层次感 */
+      .teacher-board.collapsed .board-header {
+        border-bottom: 1px solid #e5e7eb;
+      }
+    </style>
+    <script>
+      // 统一后端基础地址
+      window.API_BASE = "http://127.0.0.1:8000";
+    </script>
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <div class="header-content">
+          <div class="header-left">
+            <button
+              id="sidebarToggleBtn"
+              class="icon-btn"
+              aria-label="折叠侧边栏"
+            >
+              ☰
+            </button>
+            <h1 class="logo">教师工作台</h1>
           </div>
-          <div class="board-actions">
-            <button class="btn btn-secondary" id="toggleBoardBtn">收起</button>
-            <button class="btn btn-primary" id="refreshBoardBtn">刷新</button>
+          <div class="user-info">
+            <span class="username" id="username"></span>
+            <button class="logout-btn btn" id="logoutBtn">退出登录</button>
           </div>
         </div>
+      </header>
 
-        <div class="board-content">
-          <div class="section">
-            <h4>公告</h4>
-            <div id="announcementsList">
-              <div class="list-row">加载中...</div>
+      <aside class="sidebar">
+        <nav class="nav-menu" id="teacherNav">
+          <ul>
+            <li class="nav-item active">
+              <a href="#reminders" class="nav-link" data-section="reminders">
+                <span class="nav-icon">⏰</span>
+                <span class="nav-text">教师提醒</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#tasks" class="nav-link" data-section="tasks">
+                <span class="nav-icon">✅</span>
+                <span class="nav-text">点评任务</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#feedbacks" class="nav-link" data-section="feedbacks">
+                <span class="nav-icon">📝</span>
+                <span class="nav-text">查看点评</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <section id="teacherBoard" class="teacher-board">
+          <div class="board-header">
+            <div>
+              <strong>教师公告栏</strong>
+              <span class="muted" style="margin-left: 8px"
+                >公告与收到的提醒（按时间排序）</span
+              >
             </div>
-            <div class="board-pagination">
-              <button class="btn btn-secondary" id="annPrevBtn">上一页</button>
-              <span id="annPageInfo">第 1 页</span>
-              <button class="btn btn-secondary" id="annNextBtn">下一页</button>
+            <div class="board-actions">
+              <button class="btn btn-secondary" id="toggleBoardBtn">
+                收起
+              </button>
+              <button class="btn btn-primary" id="refreshBoardBtn">刷新</button>
             </div>
           </div>
 
-          <div class="section">
-            <h4>收到的提醒</h4>
-            <div id="remindersList">
-              <div class="list-row">加载中...</div>
+          <div class="board-content">
+            <div class="section">
+              <h4>公告</h4>
+              <div id="announcementsList">
+                <div class="list-row">加载中...</div>
+              </div>
+              <div class="board-pagination">
+                <button class="btn btn-secondary" id="annPrevBtn">
+                  上一页
+                </button>
+                <span id="annPageInfo">第 1 页</span>
+                <button class="btn btn-secondary" id="annNextBtn">
+                  下一页
+                </button>
+              </div>
             </div>
-            <div class="board-pagination">
-              <button class="btn btn-secondary" id="remPrevBtn">上一页</button>
-              <span id="remPageInfo">第 1 页</span>
-              <button class="btn btn-secondary" id="remNextBtn">下一页</button>
+
+            <div class="section">
+              <h4>收到的提醒</h4>
+              <div id="remindersList">
+                <div class="list-row">加载中...</div>
+              </div>
+              <div class="board-pagination">
+                <button class="btn btn-secondary" id="remPrevBtn">
+                  上一页
+                </button>
+                <span id="remPageInfo">第 1 页</span>
+                <button class="btn btn-secondary" id="remNextBtn">
+                  下一页
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="remindersTab" class="section" style="display: block;">
-        <div class="toolbar">
-          <input type="text" id="remInbQ" placeholder="搜索提醒内容/学员昵称/小鹅通ID" />
-          <button class="btn btn-primary" id="remInbSearchBtn">搜索</button>
-          <button class="btn btn-secondary" id="remInbRefresh">刷新</button>
-          <label class="muted">
-            <input type="checkbox" id="remInbSelectAll" />
-            全选
-          </label>
-          <button class="btn" id="remInbMarkReadSelectedBtn">标记所选为已读</button>
-        </div>
-        <div id="remInbList">
-          <div class="list-row">加载中...</div>
-        </div>
-        <div class="board-pagination">
-          <button class="btn btn-secondary" id="remInbPrev">上一页</button>
-          <span id="remInbPageInfo">第 1 页</span>
-          <button class="btn btn-secondary" id="remInbNext">下一页</button>
-        </div>
-      </section>
+        <section id="remindersTab" class="section" style="display: block">
+          <div class="toolbar">
+            <input
+              type="text"
+              id="remInbQ"
+              placeholder="搜索提醒内容/学员昵称/小鹅通ID"
+            />
+            <button class="btn btn-primary" id="remInbSearchBtn">搜索</button>
+            <button class="btn btn-secondary" id="remInbRefresh">刷新</button>
+            <label class="muted">
+              <input type="checkbox" id="remInbSelectAll" />
+              全选
+            </label>
+            <button class="btn" id="remInbMarkReadSelectedBtn">
+              标记所选为已读
+            </button>
+          </div>
+          <div id="remInbList">
+            <div class="list-row">加载中...</div>
+          </div>
+          <div class="board-pagination">
+            <button class="btn btn-secondary" id="remInbPrev">上一页</button>
+            <span id="remInbPageInfo">第 1 页</span>
+            <button class="btn btn-secondary" id="remInbNext">下一页</button>
+          </div>
+        </section>
 
-      <section id="tasksTab" class="tab" style="display: none;">
-        <div class="toolbar">
-          <select id="taskStatusFilter">
-            <option value="pending">未完成</option>
-            <option value="completed">已完成</option>
-            <option value="">全部</option>
-          </select>
-          <button id="tasksRefresh">刷新</button>
-        </div>
+        <section id="tasksTab" class="tab" style="display: none">
+          <div class="toolbar">
+            <select id="taskStatusFilter">
+              <option value="pending">未完成</option>
+              <option value="completed">已完成</option>
+              <option value="">全部</option>
+            </select>
+            <button id="tasksRefresh">刷新</button>
+          </div>
 
-        <div id="tasksList"></div>
+          <div id="tasksList"></div>
 
-        <div class="pagination">
-          <button id="tasksPrev">上一页</button>
-          <span id="tasksPage"></span>
-          <button id="tasksNext">下一页</button>
-        </div>
-      </section>
+          <div class="pagination">
+            <button id="tasksPrev">上一页</button>
+            <span id="tasksPage"></span>
+            <button id="tasksNext">下一页</button>
+          </div>
+        </section>
 
-      <section id="feedbacksTab" class="section" style="display: none;">
-        <div class="toolbar">
-          <input type="text" id="fbQ" placeholder="搜索学员/教师/点评正文" />
-          <label>开始：
-            <input type="date" id="fbStart" />
-          </label>
-          <label>结束：
-            <input type="date" id="fbEnd" />
-          </label>
-          <button class="btn btn-primary" id="fbSearchBtn">搜索</button>
-          <button class="btn btn-secondary" id="fbRefresh">刷新</button>
-        </div>
-        <div id="fbList">
-          <div class="list-row">加载中...</div>
-        </div>
-        <div class="board-pagination">
-          <button class="btn btn-secondary" id="fbPrev">上一页</button>
-          <span id="fbPageInfo">第 1 页</span>
-          <button class="btn btn-secondary" id="fbNext">下一页</button>
-        </div>
-      </section>
-    </main>
-  </div>
+        <section id="feedbacksTab" class="section" style="display: none">
+          <div class="toolbar">
+            <input type="text" id="fbQ" placeholder="搜索学员/教师/点评正文" />
+            <label
+              >开始：
+              <input type="date" id="fbStart" />
+            </label>
+            <label
+              >结束：
+              <input type="date" id="fbEnd" />
+            </label>
+            <button class="btn btn-primary" id="fbSearchBtn">搜索</button>
+            <button class="btn btn-secondary" id="fbRefresh">刷新</button>
+          </div>
+          <div id="fbList">
+            <div class="list-row">加载中...</div>
+          </div>
+          <div class="board-pagination">
+            <button class="btn btn-secondary" id="fbPrev">上一页</button>
+            <span id="fbPageInfo">第 1 页</span>
+            <button class="btn btn-secondary" id="fbNext">下一页</button>
+          </div>
+        </section>
+      </main>
+    </div>
 
-  <script src="js/utils.js"></script>
-  <script>
-    (function() {
-      try {
-        const collapsed = Utils.getStorage("ops_sidebar_collapsed");
-        if (collapsed === true || collapsed === "true") {
-          document.body.classList.add("sidebar-collapsed");
-        }
-      } catch (_) {}
-      document.getElementById("sidebarToggleBtn")?.addEventListener("click", () => {
-        document.body.classList.toggle("sidebar-collapsed");
-        const isCollapsed = document.body.classList.contains("sidebar-collapsed");
-        try { Utils.setStorage("ops_sidebar_collapsed", isCollapsed, true); } catch (_) {}
-      });
-    })();
-  </script>
-  <script src="js/auth.js"></script>
-  <script src="js/teacher.js"></script>
-</body>
+    <script src="js/utils.js"></script>
+    <script>
+      (function () {
+        try {
+          const collapsed = Utils.getStorage("ops_sidebar_collapsed");
+          if (collapsed === true || collapsed === "true") {
+            document.body.classList.add("sidebar-collapsed");
+          }
+        } catch (_) {}
+        document
+          .getElementById("sidebarToggleBtn")
+          ?.addEventListener("click", () => {
+            document.body.classList.toggle("sidebar-collapsed");
+            const isCollapsed =
+              document.body.classList.contains("sidebar-collapsed");
+            try {
+              Utils.setStorage("ops_sidebar_collapsed", isCollapsed, true);
+            } catch (_) {}
+          });
+      })();
+    </script>
+    <script src="js/auth.js"></script>
+    <script src="js/teacher.js"></script>
+  </body>
 </html>

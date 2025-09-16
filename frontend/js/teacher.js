@@ -1328,7 +1328,7 @@ async loadTasks() {
     }
     wrap.innerHTML = this.announcements
       .map((a) => {
-        const title = this.escapeHtml(a.title || `公告 #${a.id}`);
+        const title = this.escapeHtml(a.title || '公告');
         const createdAt = this.formatDateTime(a.created_at);
         return `
           <div class="card">
