@@ -32,6 +32,9 @@ class FeedbackRecordSerializer(serializers.ModelSerializer):
 class EvaluationTaskSerializer(serializers.ModelSerializer):
     student_nickname = serializers.ReadOnlyField(source='student.nickname')
     assignee_name = serializers.ReadOnlyField(source='assignee.name')
+    # 新增：任务对应点评摘要（空安全）
+    last_teacher_content = serializers.SerializerMethodField(read_only=True)
+    last_researcher_feedback = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = EvaluationTask
@@ -40,6 +43,23 @@ class EvaluationTaskSerializer(serializers.ModelSerializer):
             'student', 'student_nickname',
             'assignee', 'assignee_name',
             'status', 'source', 'note',
+            # 新增两个字段
+            'last_teacher_content', 'last_researcher_feedback',
             'created_at', 'updated_at', 'created_by', 'updated_by', 'deleted_at'
         ]
         read_only_fields = ['created_at', 'updated_at', 'deleted_at']
+
+    def get_last_teacher_content(self, obj):
+        # 注意：OneToOne 反向访问器在没有记录时会抛 DoesNotExist，必须捕获
+        try:
+            fb = obj.feedback  # related_name='feedback'
+        except FeedbackRecord.DoesNotExist:
+            return None
+        return fb.teacher_content or None
+
+    def get_last_researcher_feedback(self, obj):
+        try:
+            fb = obj.feedback
+        except FeedbackRecord.DoesNotExist:
+            return None
+        return fb.researcher_feedback or None

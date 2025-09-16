@@ -819,7 +819,7 @@ async loadTasks() {
 
     const params = {
       page: this.taskQuery.page,
-      size: this.taskQuery.size,
+      page_size: this.taskQuery.size,
       ordering: this.taskQuery.ordering,
       assignee_me: true,
     };
@@ -880,6 +880,17 @@ async loadTasks() {
 
         const assigneeName = this.escapeHtml(t.assignee_name || t.assignee || "");
         const note = t.note ? this.escapeHtml(t.note) : "<em>无备注</em>";
+
+        // 新增：仅在“已完成”任务显示点评摘要（后端新增字段 last_teacher_content / last_researcher_feedback）
+        const feedbackSummary =
+          t.status === "completed"
+            ? `
+        <div class="feedback-summary" style="margin-top:8px; background:#f6f8fa; padding:8px; border-radius:4px;">
+          ${t.last_teacher_content ? `<div><strong>教师点评：</strong>${this.escapeHtml(t.last_teacher_content)}</div>` : `<div><strong>教师点评：</strong><em>无</em></div>`}
+          ${t.last_researcher_feedback ? `<div style=\"margin-top:4px;\"><strong>教研反馈：</strong>${this.escapeHtml(t.last_researcher_feedback)}</div>` : `<div style=\"margin-top:4px;\"><strong>教研反馈：</strong><em>无</em></div>`}
+        </div>
+        `
+            : "";
 
         const editor =
           t.status !== "completed"
@@ -973,6 +984,7 @@ async loadTasks() {
           </div>
           <div class="card-body">
             <div class="task-note" style="color:#666;margin-bottom:6px;"><strong>备注：</strong>${note}</div>
+            ${feedbackSummary}
             ${editor}
           </div>
         </div>

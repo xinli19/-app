@@ -1,0 +1,1233 @@
+{
+  "基础班": {
+    "course": {
+      "name": "基础班",
+      "status": "enabled",
+      "description": "钢琴基础班课程"
+    },
+    "lessons": [
+      {
+        "name": "第一课",
+        "status": "enabled",
+        "sort_order": 1,
+        "description": "基础班第一课",
+        "pieces": [
+          {
+            "name": "金鸡独立",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第一课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二课",
+        "status": "enabled",
+        "sort_order": 2,
+        "description": "基础班第二课",
+        "pieces": [
+          {
+            "name": "爬城墙",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二课曲目"
+          },
+          {
+            "name": "钟声",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二课曲目"
+          },
+          {
+            "name": "两只老虎",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二课曲目"
+          },
+          {
+            "name": "小红帽",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第三课",
+        "status": "enabled",
+        "sort_order": 3,
+        "description": "基础班第三课",
+        "pieces": [
+          {
+            "name": "行走训练（两音行走）",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第三课曲目"
+          },
+          {
+            "name": "敲钟声",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第三课曲目"
+          },
+          {
+            "name": "植物大战僵尸",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第三课曲目"
+          },
+          {
+            "name": "三音行走训练",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第三课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第四课",
+        "status": "enabled",
+        "sort_order": 4,
+        "description": "基础班第四课",
+        "pieces": [
+          {
+            "name": "爬山",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第四课曲目"
+          },
+          {
+            "name": "小宝宝要睡觉（分解和弦）",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第四课曲目"
+          },
+          {
+            "name": "小宝宝要睡觉（柱式和弦）",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第四课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第五课",
+        "status": "enabled",
+        "sort_order": 5,
+        "description": "基础班第五课",
+        "pieces": [
+          {
+            "name": "四音行走",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第五课曲目"
+          },
+          {
+            "name": "康康舞曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第五课曲目"
+          },
+          {
+            "name": "仙女的竖琴",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第五课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第六课",
+        "status": "enabled",
+        "sort_order": 6,
+        "description": "基础班第六课",
+        "pieces": [
+          {
+            "name": "知更鸟",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第六课曲目"
+          },
+          {
+            "name": "快乐的小丑",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第六课曲目"
+          },
+          {
+            "name": "布谷鸟",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第六课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第七课",
+        "status": "enabled",
+        "sort_order": 7,
+        "description": "基础班第七课",
+        "pieces": [
+          {
+            "name": "拜厄第十六条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第七课曲目"
+          },
+          {
+            "name": "拜厄第三十条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第七课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第八课",
+        "status": "enabled",
+        "sort_order": 8,
+        "description": "基础班第八课",
+        "pieces": [
+          {
+            "name": "春之歌",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第八课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第九课",
+        "status": "enabled",
+        "sort_order": 9,
+        "description": "基础班第九课",
+        "pieces": [
+          {
+            "name": "小步舞曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第九课曲目"
+          },
+          {
+            "name": "拜厄第二十三条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第九课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十课",
+        "status": "enabled",
+        "sort_order": 10,
+        "description": "基础班第十课",
+        "pieces": [
+          {
+            "name": "划船",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十课曲目"
+          },
+          {
+            "name": "荷兰舞曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十一课",
+        "status": "enabled",
+        "sort_order": 11,
+        "description": "基础班第十一课",
+        "pieces": [
+          {
+            "name": "The Swing",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十一课曲目"
+          },
+          {
+            "name": "拜厄第二十九条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十一课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十二课",
+        "status": "enabled",
+        "sort_order": 12,
+        "description": "基础班第十二课",
+        "pieces": [
+          {
+            "name": "啄木鸟",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十二课曲目"
+          },
+          {
+            "name": "惊愕",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十二课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十三课",
+        "status": "enabled",
+        "sort_order": 13,
+        "description": "基础班第十三课",
+        "pieces": [
+          {
+            "name": "拜厄第四十五条（选修）",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十三课曲目"
+          },
+          {
+            "name": "拉德斯基进行曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十三课曲目"
+          },
+          {
+            "name": "拜厄第三十九条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十三课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十四课",
+        "status": "enabled",
+        "sort_order": 14,
+        "description": "基础班第十四课",
+        "pieces": [
+          {
+            "name": "拜厄第四十八条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十四课曲目"
+          },
+          {
+            "name": "莫扎特的“旋律”",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十四课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十五课",
+        "status": "enabled",
+        "sort_order": 15,
+        "description": "基础班第十五课",
+        "pieces": [
+          {
+            "name": "军民大生产",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十五课曲目"
+          },
+          {
+            "name": "车尔尼599第12条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十五课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十六课",
+        "status": "enabled",
+        "sort_order": 16,
+        "description": "基础班第十六课",
+        "pieces": [
+          {
+            "name": "在那遥远的地方",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十六课曲目"
+          },
+          {
+            "name": "春天",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十六课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十七课",
+        "status": "enabled",
+        "sort_order": 17,
+        "description": "基础班第十七课",
+        "pieces": [
+          {
+            "name": "摇篮曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十七课曲目"
+          },
+          {
+            "name": "车尔尼599第13条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十七课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十八课",
+        "status": "enabled",
+        "sort_order": 18,
+        "description": "基础班第十八课",
+        "pieces": [
+          {
+            "name": "致爱丽丝",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十八课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十九课",
+        "status": "enabled",
+        "sort_order": 19,
+        "description": "基础班第十九课",
+        "pieces": [
+          {
+            "name": "小卡农曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十九课曲目"
+          },
+          {
+            "name": "民间舞",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第十九课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十课",
+        "status": "enabled",
+        "sort_order": 20,
+        "description": "基础班第二十课",
+        "pieces": [
+          {
+            "name": "车尔尼599第26条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十课曲目"
+          },
+          {
+            "name": "三个曲目片段",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十一课",
+        "status": "enabled",
+        "sort_order": 21,
+        "description": "基础班第二十一课",
+        "pieces": [
+          {
+            "name": "c小调圆舞曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十一课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十二课",
+        "status": "enabled",
+        "sort_order": 22,
+        "description": "基础班第二十二课",
+        "pieces": [
+          {
+            "name": "保持音",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十二课曲目"
+          },
+          {
+            "name": "车尔尼599第15条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十二课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十三课",
+        "status": "enabled",
+        "sort_order": 23,
+        "description": "基础班第二十三课",
+        "pieces": [
+          {
+            "name": "快乐的女战士",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十三课曲目"
+          },
+          {
+            "name": "拜厄第五十九条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十三课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十四课",
+        "status": "enabled",
+        "sort_order": 24,
+        "description": "基础班第二十四课",
+        "pieces": [
+          {
+            "name": "塔兰泰拉舞曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十四课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十五课",
+        "status": "enabled",
+        "sort_order": 25,
+        "description": "基础班第二十五课",
+        "pieces": [
+          {
+            "name": "音阶的基础弹法 C大调＆a小调",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十五课曲目"
+          },
+          {
+            "name": "拜厄第五十五条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十五课曲目"
+          },
+          {
+            "name": "圆舞曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十五课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十六课",
+        "status": "enabled",
+        "sort_order": 26,
+        "description": "基础班第二十六课",
+        "pieces": [
+          {
+            "name": "拜厄第五十六条",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十六课曲目"
+          },
+          {
+            "name": "小步舞曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "基础班第二十六课曲目"
+          }
+        ]
+      }
+    ]
+  },
+  "中级班": {
+    "course": {
+      "name": "中级班",
+      "status": "enabled",
+      "description": "钢琴中级班课程"
+    },
+    "lessons": [
+      {
+        "name": "第一课",
+        "status": "enabled",
+        "sort_order": 1,
+        "description": "中级班第一课",
+        "pieces": [
+          {
+            "name": "车尔尼599第33条",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第一课曲目"
+          },
+          {
+            "name": "克莱门蒂小奏鸣曲 Op.36 No.1",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第一课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二课",
+        "status": "enabled",
+        "sort_order": 2,
+        "description": "中级班第二课",
+        "pieces": [
+          {
+            "name": "莱蒙练习曲 第一条",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第二课曲目"
+          },
+          {
+            "name": "莱蒙练习曲 第二条",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第二课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第三课",
+        "status": "enabled",
+        "sort_order": 3,
+        "description": "中级班第三课",
+        "pieces": [
+          {
+            "name": "C大调音阶",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第三课曲目"
+          },
+          {
+            "name": "猫和老鼠",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第三课曲目"
+          },
+          {
+            "name": "车尔尼599第12条（选修）",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第三课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第四课",
+        "status": "enabled",
+        "sort_order": 4,
+        "description": "中级班第四课",
+        "pieces": [
+          {
+            "name": "1指支撑训练",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第四课曲目"
+          },
+          {
+            "name": "F大调音阶/琶音/和弦转位/和弦连接（选修）",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第四课曲目"
+          },
+          {
+            "name": "梦幻曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第四课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第五课",
+        "status": "enabled",
+        "sort_order": 5,
+        "description": "中级班第五课",
+        "pieces": [
+          {
+            "name": "附点四分音符",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第五课曲目"
+          },
+          {
+            "name": "沂蒙民歌",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第五课曲目"
+          },
+          {
+            "name": "《天鹅湖》选段",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第五课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第六课",
+        "status": "enabled",
+        "sort_order": 6,
+        "description": "中级班第六课",
+        "pieces": [
+          {
+            "name": "节奏练习（选修）",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第六课曲目"
+          },
+          {
+            "name": "Sailor's hornpipe（水手角笛舞）",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第六课曲目"
+          },
+          {
+            "name": "Country gardens",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第六课曲目"
+          },
+          {
+            "name": "浏阳河",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第六课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第七课",
+        "status": "enabled",
+        "sort_order": 7,
+        "description": "中级班第七课",
+        "pieces": [
+          {
+            "name": "Innocence（天真烂漫）",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第七课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第八课",
+        "status": "enabled",
+        "sort_order": 8,
+        "description": "中级班第八课",
+        "pieces": [
+          {
+            "name": "车尔尼599第23条",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第八课曲目"
+          },
+          {
+            "name": "《月光》选段",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第八课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第九课",
+        "status": "enabled",
+        "sort_order": 9,
+        "description": "中级班第九课",
+        "pieces": [
+          {
+            "name": "G大调音阶",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第九课曲目"
+          },
+          {
+            "name": "G大调主和弦琶音",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第九课曲目"
+          },
+          {
+            "name": "《卡农》片段1",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第九课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十课",
+        "status": "enabled",
+        "sort_order": 10,
+        "description": "中级班第十课",
+        "pieces": [
+          {
+            "name": "车尔尼《变奏曲》",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第十课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十一课",
+        "status": "enabled",
+        "sort_order": 11,
+        "description": "中级班第十一课",
+        "pieces": [
+          {
+            "name": "布格缪勒《天使的歌声》",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十一课曲目"
+          },
+          {
+            "name": "e小调音阶（和声小调）",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第十一课曲目"
+          },
+          {
+            "name": "节奏练习",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十一课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十二课",
+        "status": "enabled",
+        "sort_order": 12,
+        "description": "中级班第十二课",
+        "pieces": [
+          {
+            "name": "布格缪勒《骑士》",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十二课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十三课",
+        "status": "enabled",
+        "sort_order": 13,
+        "description": "中级班第十三课",
+        "pieces": [
+          {
+            "name": "车尔尼599第68条",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第十三课曲目"
+          },
+          {
+            "name": "巴赫《进行曲》",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十三课曲目"
+          },
+          {
+            "name": "D大调音阶",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第十三课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十四课",
+        "status": "enabled",
+        "sort_order": 14,
+        "description": "中级班第十四课",
+        "pieces": [
+          {
+            "name": "手腕练习",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十四课曲目"
+          },
+          {
+            "name": "巴赫《平均律曲集》前奏曲·BWV 846",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十四课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十五课",
+        "status": "enabled",
+        "sort_order": 15,
+        "description": "中级班第十五课",
+        "pieces": [
+          {
+            "name": "琶音练习",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第十五课曲目"
+          },
+          {
+            "name": "G大调小奏鸣曲（第四乐章）",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十五课曲目"
+          },
+          {
+            "name": "车尔尼139第70条",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第十五课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十六课",
+        "status": "enabled",
+        "sort_order": 16,
+        "description": "中级班第十六课",
+        "pieces": [
+          {
+            "name": "《卡农》片段2",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十六课曲目"
+          },
+          {
+            "name": "F大调音阶",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第十六课曲目"
+          },
+          {
+            "name": "F大调主和弦分解和弦琶音",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第十六课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十七课",
+        "status": "enabled",
+        "sort_order": 17,
+        "description": "中级班第十七课",
+        "pieces": [
+          {
+            "name": "转指练习",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十七课曲目"
+          },
+          {
+            "name": "《小星星变奏曲》选段",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十七课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十八课",
+        "status": "enabled",
+        "sort_order": 18,
+        "description": "中级班第十八课",
+        "pieces": [
+          {
+            "name": "Always with me",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十八课曲目"
+          },
+          {
+            "name": "车尔尼599第47条",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第十八课曲目"
+          },
+          {
+            "name": "d小调音阶＆琶音",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第十八课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第十九课",
+        "status": "enabled",
+        "sort_order": 19,
+        "description": "中级班第十九课",
+        "pieces": [
+          {
+            "name": "两条踏板练习",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十九课曲目"
+          },
+          {
+            "name": "Cloudscapes",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十九课曲目"
+          },
+          {
+            "name": "Angelfish",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第十九课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十课",
+        "status": "enabled",
+        "sort_order": 20,
+        "description": "中级班第二十课",
+        "pieces": [
+          {
+            "name": "A大调音阶＆琶音",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第二十课曲目"
+          },
+          {
+            "name": "尼奈特风笛曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第二十课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十一课",
+        "status": "enabled",
+        "sort_order": 21,
+        "description": "中级班第二十一课",
+        "pieces": [
+          {
+            "name": "Toccata",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第二十一课曲目"
+          },
+          {
+            "name": "车尔尼139第25条",
+            "status": "enabled",
+            "attribute": "etude",
+            "is_required": true,
+            "description": "中级班第二十一课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十二课",
+        "status": "enabled",
+        "sort_order": 22,
+        "description": "中级班第二十二课",
+        "pieces": [
+          {
+            "name": "降B大调音阶＆琶音",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第二十二课曲目"
+          },
+          {
+            "name": "《卡农》片段3",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第二十二课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十三课",
+        "status": "enabled",
+        "sort_order": 23,
+        "description": "中级班第二十三课",
+        "pieces": [
+          {
+            "name": "g小调音阶＆主和弦柱式和弦",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第二十三课曲目"
+          },
+          {
+            "name": "《法国古歌》",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第二十三课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十四课",
+        "status": "enabled",
+        "sort_order": 24,
+        "description": "中级班第二十四课",
+        "pieces": [
+          {
+            "name": "降E大调音阶＆主和弦柱式和弦",
+            "status": "enabled",
+            "attribute": "technique",
+            "is_required": true,
+            "description": "中级班第二十四课曲目"
+          },
+          {
+            "name": "有难度的左手练习",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第二十四课曲目"
+          },
+          {
+            "name": "那不勒斯歌曲",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第二十四课曲目"
+          }
+        ]
+      },
+      {
+        "name": "第二十五课",
+        "status": "enabled",
+        "sort_order": 25,
+        "description": "中级班第二十五课",
+        "pieces": [
+          {
+            "name": "克莱门蒂 Op.36 No.3 第一乐章",
+            "status": "enabled",
+            "attribute": "music",
+            "is_required": true,
+            "description": "中级班第二十五课曲目"
+          }
+        ]
+      }
+    ]
+  }
+}

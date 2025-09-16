@@ -1,0 +1,427 @@
+{
+  "basic_courses": [
+    {
+      "course_number": "第一课",
+      "course_type": "基础班",
+      "songs": [
+        "金鸡独立"
+      ]
+    },
+    {
+      "course_number": "第二课",
+      "course_type": "基础班",
+      "songs": [
+        "爬城墙",
+        "钟声",
+        "两只老虎",
+        "小红帽"
+      ]
+    },
+    {
+      "course_number": "第三课",
+      "course_type": "基础班",
+      "songs": [
+        "行走训练（两音行走）",
+        "敲钟声",
+        "植物大战僵尸",
+        "三音行走训练"
+      ]
+    },
+    {
+      "course_number": "第四课",
+      "course_type": "基础班",
+      "songs": [
+        "爬山",
+        "小宝宝要睡觉（分解和弦）",
+        "小宝宝要睡觉（柱式和弦）"
+      ]
+    },
+    {
+      "course_number": "第五课",
+      "course_type": "基础班",
+      "songs": [
+        "四音行走",
+        "康康舞曲",
+        "仙女的竖琴"
+      ]
+    },
+    {
+      "course_number": "第六课",
+      "course_type": "基础班",
+      "songs": [
+        "知更鸟",
+        "快乐的小丑",
+        "布谷鸟"
+      ]
+    },
+    {
+      "course_number": "第七课",
+      "course_type": "基础班",
+      "songs": [
+        "拜厄第十六条",
+        "拜厄第三十条"
+      ]
+    },
+    {
+      "course_number": "第八课",
+      "course_type": "基础班",
+      "songs": [
+        "春之歌"
+      ]
+    },
+    {
+      "course_number": "第九课",
+      "course_type": "基础班",
+      "songs": [
+        "小步舞曲",
+        "拜厄第二十三条"
+      ]
+    },
+    {
+      "course_number": "第十课",
+      "course_type": "基础班",
+      "songs": [
+        "划船",
+        "荷兰舞曲"
+      ]
+    },
+    {
+      "course_number": "第十一课",
+      "course_type": "基础班",
+      "songs": [
+        "The Swing",
+        "拜厄第二十九条"
+      ]
+    },
+    {
+      "course_number": "第十二课",
+      "course_type": "基础班",
+      "songs": [
+        "啄木鸟",
+        "惊愕"
+      ]
+    },
+    {
+      "course_number": "第十三课",
+      "course_type": "基础班",
+      "songs": [
+        "拜厄第四十五条（选修）",
+        "拉德斯基进行曲",
+        "拜厄第三十九条"
+      ]
+    },
+    {
+      "course_number": "第十四课",
+      "course_type": "基础班",
+      "songs": [
+        "拜厄第四十八条",
+        "莫扎特的“旋律”"
+      ]
+    },
+    {
+      "course_number": "第十五课",
+      "course_type": "基础班",
+      "songs": [
+        "军民大生产",
+        "车尔尼599第12条"
+      ]
+    },
+    {
+      "course_number": "第十六课",
+      "course_type": "基础班",
+      "songs": [
+        "在那遥远的地方",
+        "春天"
+      ]
+    },
+    {
+      "course_number": "第十七课",
+      "course_type": "基础班",
+      "songs": [
+        "摇篮曲",
+        "车尔尼599第13条"
+      ]
+    },
+    {
+      "course_number": "第十八课",
+      "course_type": "基础班",
+      "songs": [
+        "致爱丽丝"
+      ]
+    },
+    {
+      "course_number": "第十九课",
+      "course_type": "基础班",
+      "songs": [
+        "小卡农曲",
+        "民间舞"
+      ]
+    },
+    {
+      "course_number": "第二十课",
+      "course_type": "基础班",
+      "songs": [
+        "车尔尼599第26条",
+        "三个曲目片段"
+      ]
+    },
+    {
+      "course_number": "第二十一课",
+      "course_type": "基础班",
+      "songs": [
+        "c小调圆舞曲"
+      ]
+    },
+    {
+      "course_number": "第二十二课",
+      "course_type": "基础班",
+      "songs": [
+        "保持音",
+        "车尔尼599第15条"
+      ]
+    },
+    {
+      "course_number": "第二十三课",
+      "course_type": "基础班",
+      "songs": [
+        "快乐的女战士",
+        "拜厄第五十九条"
+      ]
+    },
+    {
+      "course_number": "第二十四课",
+      "course_type": "基础班",
+      "songs": [
+        "塔兰泰拉舞曲"
+      ]
+    },
+    {
+      "course_number": "第二十五课",
+      "course_type": "基础班",
+      "songs": [
+        "音阶的基础弹法 C大调＆a小调",
+        "拜厄第五十五条",
+        "圆舞曲"
+      ]
+    },
+    {
+      "course_number": "第二十六课",
+      "course_type": "基础班",
+      "songs": [
+        "拜厄第五十六条",
+        "小步舞曲"
+      ]
+    }
+  ],
+  "intermediate_courses": [
+    {
+      "course_number": "第一课",
+      "course_type": "中级班",
+      "songs": [
+        "车尔尼599第33条",
+        "克莱门蒂小奏鸣曲 Op.36 No.1"
+      ]
+    },
+    {
+      "course_number": "第二课",
+      "course_type": "中级班",
+      "songs": [
+        "莱蒙练习曲 第一条",
+        "莱蒙练习曲 第二条"
+      ]
+    },
+    {
+      "course_number": "第三课",
+      "course_type": "中级班",
+      "songs": [
+        "C大调音阶",
+        "猫和老鼠",
+        "车尔尼599第12条（选修）"
+      ]
+    },
+    {
+      "course_number": "第四课",
+      "course_type": "中级班",
+      "songs": [
+        "1指支撑训练",
+        "F大调音阶/琶音/和弦转位/和弦连接（选修）",
+        "梦幻曲"
+      ]
+    },
+    {
+      "course_number": "第五课",
+      "course_type": "中级班",
+      "songs": [
+        "附点四分音符",
+        "沂蒙民歌",
+        "《天鹅湖》选段"
+      ]
+    },
+    {
+      "course_number": "第六课",
+      "course_type": "中级班",
+      "songs": [
+        "节奏练习（选修）",
+        "Sailor's hornpipe（水手角笛舞）",
+        "Country gardens",
+        "浏阳河"
+      ]
+    },
+    {
+      "course_number": "第七课",
+      "course_type": "中级班",
+      "songs": [
+        "Innocence（天真烂漫）"
+      ]
+    },
+    {
+      "course_number": "第八课",
+      "course_type": "中级班",
+      "songs": [
+        "车尔尼599第23条",
+        "《月光》选段"
+      ]
+    },
+    {
+      "course_number": "第九课",
+      "course_type": "中级班",
+      "songs": [
+        "G大调音阶",
+        "G大调主和弦琶音",
+        "《卡农》片段1"
+      ]
+    },
+    {
+      "course_number": "第十课",
+      "course_type": "中级班",
+      "songs": [
+        "车尔尼《变奏曲》"
+      ]
+    },
+    {
+      "course_number": "第十一课",
+      "course_type": "中级班",
+      "songs": [
+        "布格缪勒《天使的歌声》",
+        "e小调音阶（和声小调）",
+        "节奏练习"
+      ]
+    },
+    {
+      "course_number": "第十二课",
+      "course_type": "中级班",
+      "songs": [
+        "布格缪勒《骑士》"
+      ]
+    },
+    {
+      "course_number": "第十三课",
+      "course_type": "中级班",
+      "songs": [
+        "车尔尼599第68条",
+        "巴赫《进行曲》",
+        "D大调音阶"
+      ]
+    },
+    {
+      "course_number": "第十四课",
+      "course_type": "中级班",
+      "songs": [
+        "手腕练习",
+        "巴赫《平均律曲集》前奏曲·BWV 846"
+      ]
+    },
+    {
+      "course_number": "第十五课",
+      "course_type": "中级班",
+      "songs": [
+        "琶音练习",
+        "G大调小奏鸣曲（第四乐章）",
+        "车尔尼139第70条"
+      ]
+    },
+    {
+      "course_number": "第十六课",
+      "course_type": "中级班",
+      "songs": [
+        "《卡农》片段2",
+        "F大调音阶",
+        "F大调主和弦分解和弦琶音"
+      ]
+    },
+    {
+      "course_number": "第十七课",
+      "course_type": "中级班",
+      "songs": [
+        "转指练习",
+        "《小星星变奏曲》选段"
+      ]
+    },
+    {
+      "course_number": "第十八课",
+      "course_type": "中级班",
+      "songs": [
+        "Always with me",
+        "车尔尼599第47条",
+        "d小调音阶＆琶音"
+      ]
+    },
+    {
+      "course_number": "第十九课",
+      "course_type": "中级班",
+      "songs": [
+        "两条踏板练习",
+        "Cloudscapes",
+        "Angelfish"
+      ]
+    },
+    {
+      "course_number": "第二十课",
+      "course_type": "中级班",
+      "songs": [
+        "A大调音阶＆琶音",
+        "尼奈特风笛曲"
+      ]
+    },
+    {
+      "course_number": "第二十一课",
+      "course_type": "中级班",
+      "songs": [
+        "Toccata",
+        "车尔尼139第25条"
+      ]
+    },
+    {
+      "course_number": "第二十二课",
+      "course_type": "中级班",
+      "songs": [
+        "降B大调音阶＆琶音",
+        "《卡农》片段3"
+      ]
+    },
+    {
+      "course_number": "第二十三课",
+      "course_type": "中级班",
+      "songs": [
+        "g小调音阶＆主和弦柱式和弦",
+        "《法国古歌》"
+      ]
+    },
+    {
+      "course_number": "第二十四课",
+      "course_type": "中级班",
+      "songs": [
+        "降E大调音阶＆主和弦柱式和弦",
+        "有难度的左手练习",
+        "那不勒斯歌曲"
+      ]
+    },
+    {
+      "course_number": "第二十五课",
+      "course_type": "中级班",
+      "songs": [
+        "克莱门蒂 Op.36 No.3 第一乐章"
+      ]
+    }
+  ]
+}
