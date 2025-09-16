@@ -54,7 +54,6 @@ class ResearcherApp {
       students: [], // {id, nickname}
     };
     this.taskPage = { page: 1, size: 20, total: 0 };
-    this.init();
   }
 
   init() {
@@ -350,18 +349,6 @@ class ResearcherApp {
         }
         break;
     }
-    this.switchTab(targetId);
-    // 新增：切换时拉取对应数据
-    switch (sectionKey) {
-      case "reminders":
-        this.loadInboxReminders();
-        break;
-      case "tasks":
-        this.loadTasks();
-        break;
-      default:
-        break;
-    }
   }
   async loadTasks() {
     const list = document.getElementById("tasksList");
@@ -631,7 +618,13 @@ class ResearcherApp {
     panel.innerHTML = "<div class='empty-state'><em>加载中...</em></div>";
     try {
       const resp = await Utils.get("/api/v1/eval-task-batches/", { limit: 20 });
-      const items = resp.items || [];
+      const items = Array.isArray(resp?.items)
+        ? resp.items
+        : Array.isArray(resp?.results)
+        ? resp.results
+        : Array.isArray(resp)
+        ? resp
+        : [];
       if (items.length === 0) {
         panel.innerHTML =
           "<div class='empty-state'><em>暂无历史批次</em></div>";
@@ -1092,33 +1085,6 @@ class ResearcherApp {
       console.error("加载课程列表失败:", e);
       select.innerHTML = '<option value="">全部课程</option>';
     }
-  }
-
-  bindModalEvents() {
-    // 公告模态框事件绑定
-    const modal = document.getElementById("announcementModal");
-    const closeBtn = document.getElementById("modalCloseBtn");
-    const cancelBtn = document.getElementById("modalCancelBtn");
-    const form = document.getElementById("announcementForm");
-
-    [closeBtn, cancelBtn].forEach((btn) => {
-      btn.addEventListener("click", () => {
-        this.hideAnnouncementModal();
-      });
-    });
-
-    // 点击模态框外部关闭
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        this.hideAnnouncementModal();
-      }
-    });
-
-    // 表单提交
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      this.saveAnnouncement();
-    });
   }
 
   showAnnouncementModal(announcement = null) {

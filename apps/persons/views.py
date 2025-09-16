@@ -76,3 +76,27 @@ class PersonRoleViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at']
     ordering = ['-created_at']
     pagination_class = LargeResultsSetPagination  # 新增：启用支持 size 的分页
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def logout_view(request):
+    """
+    简单登出：
+    - 如果使用了 DRF TokenAuth，则尝试根据传入的 Authorization 头删除对应 Token
+    - 无论是否找到 Token，均返回 200，方便前端幂等调用
+    """
+    # 提取 Authorization 头
+    auth = request.META.get('HTTP_AUTHORIZATION') or ''
+    token_key = None
+    if auth:
+        parts = auth.split()
+        if len(parts) == 2 and parts[0] in ('Token', 'Bearer'):
+            token_key = parts[1]
+    # 删除 Token（若存在）
+    if token_key:
+        try:
+            Token.objects.filter(key=token_key).delete()
+        except Exception:
+            pass
+    return Response({'detail': 'ok'})

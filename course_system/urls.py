@@ -47,7 +47,7 @@ def serve_frontend_file(request, filename):
 urlpatterns = [
     path('', RedirectView.as_view(url='/frontend/index.html', permanent=False)),
     path('admin/', admin.site.urls),
-    path('auth/login/', include('apps.persons.auth_urls')),
+    path('auth/', include('apps.persons.auth_urls')),
     path('api/persons/roles/', include('apps.persons.role_urls')),  # 放到更前面，避免被 /api/persons/ 吞掉
     path('api/persons/', include('apps.persons.urls')),
     path('api/evaluations/', include('apps.evaluations.urls')),

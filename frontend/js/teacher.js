@@ -24,8 +24,8 @@ class TeacherApp {
     this.inboxReminders = [];
     this.inbSelectedIds = new Set();
 
-    // 新增：点评任务列表状态
-    this.taskQuery = { page: 1, size: 10, ordering: "-created_at", status: "" };
+    // 新增：点评任务列表状态（默认仅显示未完成）
+    this.taskQuery = { page: 1, size: 10, ordering: "-created_at", status: "pending" };
     this.taskPage = { page: 1, size: 10, total: 0 };
     this.tasks = [];
     // 新增：当前正在编辑点评的任务ID（行内编辑）
@@ -191,6 +191,19 @@ class TeacherApp {
       });
     }
 
+    // 新增：教师公告栏（收到的提醒）内的学员锚点点击，复用学生信息弹窗
+    const boardRemList = document.getElementById("remindersList");
+    if (boardRemList) {
+      boardRemList.addEventListener("click", (e) => {
+        const stuLink = e.target.closest(".stu-link");
+        if (stuLink) {
+          e.preventDefault();
+          const sid = stuLink.dataset.stuId;
+          if (sid) this.openStudentModal(sid);
+        }
+      });
+    }
+
     // ===== 点评任务事件绑定 =====
     const tasksRefresh = document.getElementById("tasksRefresh");
     const tasksStatusFilter = document.getElementById("taskStatusFilter");
@@ -199,6 +212,8 @@ class TeacherApp {
     const tasksList = document.getElementById("tasksList");
 
     if (tasksStatusFilter) {
+      // 同步初始选中值为默认查询状态
+      tasksStatusFilter.value = this.taskQuery.status;
       tasksStatusFilter.addEventListener("change", (e) => {
         this.taskQuery.status = e.target.value || "";
         this.taskQuery.page = 1;
@@ -412,7 +427,14 @@ async loadTasks() {
     const container = document.getElementById("tasksList");
     if (!container) return;
 
-    if (!this.tasks || this.tasks.length === 0) {
+    // 基于当前筛选状态做前端兜底过滤，确保默认不显示已完成
+    const filtered = this.taskQuery.status === "pending"
+      ? (this.tasks || []).filter((t) => t.status !== "completed")
+      : this.taskQuery.status === "completed"
+        ? (this.tasks || []).filter((t) => t.status === "completed")
+        : (this.tasks || []);
+
+    if (!filtered || filtered.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
           <h3>暂无任务</h3>
@@ -421,7 +443,7 @@ async loadTasks() {
       return;
     }
 
-    container.innerHTML = this.tasks
+    container.innerHTML = filtered
       .map((t) => {
         const statusBadge =
           t.status === "completed"
@@ -747,8 +769,18 @@ async loadTasks() {
         const urgency = this.getUrgencyText(r.urgency);
         const urgencyBadge = this.getUrgencyBadge(r.urgency);
         const category = this.getReminderCategoryText(r.category);
-        const senderName = this.escapeHtml(r.sender_name || r.sender || "未知发送人");
-        const studentName = this.escapeHtml(r.student_name || r.student_nickname || r.student || "");
+        // 统一名称解析：优先昵称/用户名，避免显示纯数字ID
+        const isIdLike = (v) => typeof v === "number" || (typeof v === "string" && /^\d+$/.test(v));
+        const senderRaw =
+          r.sender_name || r.sender_nickname || r.sender_username ||
+          (typeof r.sender === "object" && r.sender ? (r.sender.nickname || r.sender.name || r.sender.username) : (!isIdLike(r.sender) ? r.sender : ""));
+        const senderName = this.escapeHtml(senderRaw || "未知发送人");
+
+        const stuRaw =
+          r.student_name || r.student_nickname || r.student_username ||
+          (typeof r.student === "object" && r.student ? (r.student.nickname || r.student.name || r.student.username) : (!isIdLike(r.student) ? r.student : ""));
+        const studentName = this.escapeHtml(stuRaw || "");
+
         const courseName = this.escapeHtml(r.course_name || r.course || "");
         const checked = this.inbSelectedIds.has(String(id)) ? "checked" : "";
         return `
@@ -852,7 +884,14 @@ async loadTasks() {
     const container = document.getElementById("tasksList");
     if (!container) return;
 
-    if (!this.tasks || this.tasks.length === 0) {
+    // 基于当前筛选状态做前端兜底过滤，确保默认不显示已完成
+    const filtered = this.taskQuery.status === "pending"
+      ? (this.tasks || []).filter((t) => t.status !== "completed")
+      : this.taskQuery.status === "completed"
+        ? (this.tasks || []).filter((t) => t.status === "completed")
+        : (this.tasks || []);
+
+    if (!filtered || filtered.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
           <h3>暂无任务</h3>
@@ -861,7 +900,7 @@ async loadTasks() {
       return;
     }
 
-    container.innerHTML = this.tasks
+    container.innerHTML = filtered
       .map((t) => {
         const statusBadge =
           t.status === "completed"
@@ -1359,6 +1398,18 @@ async loadTasks() {
         const urgencyBadge = this.getUrgencyBadge(r.urgency);
         const category = this.getReminderCategoryText(r.category);
         const content = this.escapeHtml(r.content || "");
+        // 新增：发送人与关联学员信息（优先昵称/用户名，避免显示纯数字ID）
+        const isIdLike = (v) => typeof v === "number" || (typeof v === "string" && /^\d+$/.test(v));
+        const senderRaw = r.sender_name || r.sender_nickname || r.sender_username ||
+          (typeof r.sender === "object" && r.sender ? (r.sender.nickname || r.sender.name || r.sender.username) : (!isIdLike(r.sender) ? r.sender : ""));
+        const senderName = this.escapeHtml(senderRaw || "未知发送人");
+
+        const rawStuName = r.student_name || r.student_nickname || r.student_username ||
+          (typeof r.student === "object" && r.student ? (r.student.nickname || r.student.name || r.student.username) : (!isIdLike(r.student) ? r.student : ""));
+        const studentId = typeof r.student === "object" && r.student ? (r.student.id ?? null) : (isIdLike(r.student) ? r.student : null);
+        const studentHtml = studentId && rawStuName
+          ? `<a href=\"#\" class=\"stu-link\" data-stu-id=\"${studentId}\">${this.escapeHtml(rawStuName)}</a>`
+          : this.escapeHtml(rawStuName);
 
         // 新增：曲目刻度渲染（源自后端补充的 feedback_details）
         const fds = Array.isArray(r.feedback_details) ? r.feedback_details : [];
@@ -1367,17 +1418,21 @@ async loadTasks() {
           : "";
 
         return `
-        <div class="card reminder-card">
-          <div class="card-header">
-            <div class="left" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <span class="badge ${urgencyBadge}">${urgency}</span>
+        <div class=\"card reminder-card\">
+          <div class=\"card-header\">
+            <div class=\"left\" style=\"display:flex;align-items:center;gap:8px;flex-wrap:wrap;\">
+              <span class=\"badge ${urgencyBadge}\">${urgency}</span>
               <span>${category || "提醒"}</span>
             </div>
-            <div class="right" style="color:#57606a;font-size:12px;">${createdAt || "-"}</div>
+            <div class=\"right\" style=\"color:#57606a;font-size:12px;\">${createdAt || "-"}</div>
           </div>
-          <div class="card-body">
-            ${content || "-"}
-            ${fdText ? `<div style="margin-top:6px;"><strong>曲目刻度：</strong>${fdText}</div>` : ""}
+          <div class=\"card-body\">
+            <div class=\"list-meta\">
+              <span>发送人：${senderName}</span>
+              ${rawStuName ? `<span>学员：${studentHtml}</span>` : ""}
+            </div>
+            ${content ? `<div style=\"margin-top:6px;color:#333;\">${content}</div>` : ""}
+            ${fdText ? `<div style=\"margin-top:6px;\"><strong>曲目刻度：</strong>${fdText}</div>` : ""}
           </div>
         </div>
       `;

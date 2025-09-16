@@ -98,7 +98,7 @@ body {
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  margin: 16px auto 0;
+  margin: 50px auto 60px; /* 增加与下方模块的间距 */
   max-width: 1200px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
@@ -107,24 +107,44 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 14px 18px; /* 稍加厚重感 */
   border-bottom: 1px solid #e5e7eb;
-  background: #fafbfc;
+  background: #f7f9fc; /* 略微更亮，强调头部 */
 }
-.teacher-board .board-actions {
-  display: flex;
-  gap: 8px;
+.teacher-board .board-header strong {
+  font-size: 18px; /* 提升标题层级 */
 }
 .teacher-board .board-content {
-  padding: 20px;
-}
-.teacher-board.collapsed .board-content {
-  display: none;
+  padding: 20px 20px 16px;
 }
 
 /* 模块区域 */
 .section {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+/* 在公告栏与下方模块之间添加视觉分割线 */
+.content > #teacherBoard + .section,
+.content #teacherBoard + #remindersTab {
+  position: relative;
+}
+.content > #teacherBoard + .section::before,
+.content #teacherBoard + #remindersTab::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0,0,0,0) 0%, #e5e7eb 10%, #e5e7eb 90%, rgba(0,0,0,0) 100%);
+  margin: 8px 0 16px; /* 分割线上下留白 */
+}
+
+/* 提醒卡片头部标签更醒目些 */
+.reminder-card .card-header .badge {
+  transform: translateY(-1px);
+}
+
+/* 模块标题间距微调，让分区更清晰 */
+.section h4 {
+  margin: 0 0 10px;
 }
 .section h4 {
   margin: 0 0 8px 0;
