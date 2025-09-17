@@ -213,3 +213,6 @@ const Utils = {
     }
   },
 };
+
+// 暴露到全局，避免某些环境下的作用域问题
+if (typeof window !== 'undefined') window.Utils = Utils;
